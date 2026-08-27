@@ -7,6 +7,10 @@ Java 객체지향 설계를 기반으로 상품 등록부터 주문, 결제까�
 > 현재 내용은 개발 과정에서 요구사항과 데이터 구조가 변경될 수 있습니다.
 ## //gitkeep 삭제하셔도됩니다 파일 자리구별할려고 넣어둔겁니다
 
+# 루트 계정 만들고 -> oodbms계정만들고 -> oodbms 로  
+# 데이터 베이스 들어가서 01_create_tables ->02_insert_seed->03_insert_test 순서대로 실행
+
+
 ## 프로젝트 목표
 
 - Java 객체지향 프로그래밍을 활용한 쇼핑몰 시스템 구현
@@ -127,9 +131,19 @@ Java 객체지향 설계를 기반으로 상품 등록부터 주문, 결제까�
 
 - Java
 - Gradle
+- MySQL 8
+- JDBC (MySQL Connector/J)
 - Git / GitHub
 - 관계형 데이터베이스
 - ERD 기반 데이터 모델링
+
+## 데이터베이스 연결 설정
+
+1. `database` 폴더의 SQL 파일을 번호 순서대로 실행합니다.
+2. `src/main/resources/database.properties.example`을 복사해 같은 위치에 `database.properties`를 만듭니다.
+3. 로컬 MySQL의 URL, 사용자명, 비밀번호를 `database.properties`에 입력합니다.
+
+`database.properties`는 로컬 접속 정보를 포함하므로 Git에 커밋되지 않습니다.
 
 ## 패키지 구조
 
