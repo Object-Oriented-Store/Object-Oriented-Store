@@ -1,6 +1,6 @@
 package com.ohgiraffers.store.member.model;
 
-// 누적 구매 금액에 따른 등급 판정과 포인트 적립에 사용하는 등급 기준 데이터 객체
+// 총 누적 구매 금액에 따른 등급 적용과 포인트 적립에 사용하는 데이터 객체
 public class MembershipGradeDTO {
 
     private int gradeCode;          // 멤버십 등급 식별 코드
@@ -18,7 +18,6 @@ public class MembershipGradeDTO {
     }
 
     // 수정이 필요하지 않기에 getter만 생성
-
     public int getGradeCode() {
         return gradeCode;
     }
