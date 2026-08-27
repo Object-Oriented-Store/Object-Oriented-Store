@@ -131,9 +131,19 @@ Java 객체지향 설계를 기반으로 상품 등록부터 주문, 결제까�
 
 - Java
 - Gradle
+- MySQL 8
+- JDBC (MySQL Connector/J)
 - Git / GitHub
 - 관계형 데이터베이스
 - ERD 기반 데이터 모델링
+
+## 데이터베이스 연결 설정
+
+1. `database` 폴더의 SQL 파일을 번호 순서대로 실행합니다.
+2. `src/main/resources/database.properties.example`을 복사해 같은 위치에 `database.properties`를 만듭니다.
+3. 로컬 MySQL의 URL, 사용자명, 비밀번호를 `database.properties`에 입력합니다.
+
+`database.properties`는 로컬 접속 정보를 포함하므로 Git에 커밋되지 않습니다.
 
 ## 패키지 구조
 

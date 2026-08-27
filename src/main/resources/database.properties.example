@@ -1,0 +1,4 @@
+# Copy this file to database.properties and enter local credentials.
+db.url=jdbc:mysql://localhost:3306/object_oriented_store?connectionTimeZone=Asia/Seoul&characterEncoding=UTF-8&useUnicode=true&sslMode=DISABLED&allowPublicKeyRetrieval=true
+db.user=oodbms
+db.password=change-me
