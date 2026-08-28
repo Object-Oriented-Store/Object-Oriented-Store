@@ -21,9 +21,13 @@ public class MemberController {
 
         return memberService.loginMember(member);
     };
-    public String findGradeName(MemberDTO loginMember) {
-        return memberService.findGradeName(loginMember);
+    public MemberDTO selectMember(MemberDTO loginMember) {
+        return memberService.selectMember(loginMember);
     }
+    public boolean modifyMember(MemberDTO member) {
+        return memberService.modifyMember(member);
+    }
+
 }
 
 
