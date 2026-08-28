@@ -1,7 +1,7 @@
 package com.ohgiraffers.store.maincontroller;
 
+import com.ohgiraffers.store.member.model.Membership;
 import com.ohgiraffers.store.promotion.model.PromotionDAO;
-//import com.ohgiraffers.store.promotion.repository.Membership;
 import com.ohgiraffers.store.promotion.service.PromotionService;
 import com.ohgiraffers.store.promotion.service.SettingsOnlyManager;
 
@@ -13,12 +13,12 @@ import java.util.Scanner;
 
 public class Controller {
     private final Scanner sc;
-//    private final Membership mb;
+    private final Membership mb;
     private final Properties prop = new Properties();
 
     public Controller(Scanner sc) {
         this.sc = sc;
-//        this.mb = new Membership(sc);
+        this.mb = new Membership(sc);
 
         try {
             prop.loadFromXML(new FileInputStream(
@@ -42,11 +42,11 @@ public class Controller {
             int choice1 = sc.nextInt();
             switch (choice1) {
                 case 1:
-//                    userName = mb.logIn();
+                    userName = mb.logIn();
                     sw = false;
-//                    return userName;
+                    return userName;
                 case 2:
-//                    mb.createMembership();
+                    mb.createMembership();
                     sw = false;
                     break;
                 default:
@@ -113,12 +113,12 @@ public class Controller {
         System.out.println("2. 기존 행사 등록");
         System.out.println("3. 기존 행사 수정");
         System.out.println("4. 기존 행사 삭제");
+        System.out.println("5. 기존 행사에 행사상품을 추가");
         System.out.println("======================================");
         System.out.println("메뉴를 정수로 입력하세요: ");
         int choice3 = sc.nextInt();
         switch (choice3){
             case 1:
-
                 service.printCurrentlyPromotion();
                 break;
             case 2:
@@ -129,6 +129,9 @@ public class Controller {
                 break;
             case 4:
                 som.DeletePromotion();
+                break;
+            case 5:
+                som.RegisterPromotionProduct();
                 break;
             default:
                 System.out.println("잘못입력하셨습니다. 이전 단계로 돌아갑니다.");

@@ -1,24 +1,37 @@
 package com.ohgiraffers.store.promotion.service;
 
+import com.ohgiraffers.store.common.config.DBConnection;
 import com.ohgiraffers.store.promotion.model.PromotionDAO;
 import com.ohgiraffers.store.promotion.model.PromotionDTO;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.*;
+import java.util.Properties;
 import java.util.Scanner;
 
 public class SettingsOnlyManager {
     Scanner sc;
 
+    private final Properties prop = new Properties();
+
     public SettingsOnlyManager(Scanner sc) {
         this.sc = sc;
+
+        try {
+            prop.loadFromXML(new FileInputStream(
+                    "src/main/java/com/ohgiraffers/store/common/mapper/promotion-query.xml"
+            ));
+        } catch (IOException e) {
+            throw new RuntimeException("쿼리 XML을 읽을 수 없습니다.", e);
+        }
     }
 
     public SettingsOnlyManager() {
 
     }
 
-    public void RegisterPromotion(){
+    public void RegisterPromotion() {
         PromotionService promotionService = new PromotionService();
 
         promotionService.printCurrentlyPromotion();
@@ -32,9 +45,29 @@ public class SettingsOnlyManager {
         System.out.print("할인율: ");
         pd.setDiscountValue(sc.nextInt());
         pd.setPromotionStatus("Y");
+        String query = prop.getProperty("RegisterPromotion");
+        try (Connection conn = DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/object_oriented_store", "oodbms", "oodbms");
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, pd.getPromotionName());
+            pstmt.setString(2, pd.getPromotionColumn());
+            pstmt.setInt(3, pd.getDiscountValue());
+            ResultSet rs = pstmt.executeQuery();
+
+            System.out.println("==========새로 등록한 행사==========");
+            System.out.println("행사명: " + rs.getString("promotion_name"));
+            System.out.println("행사내용:  " + rs.getString("promotion_column"));
+            System.out.println("할인율: " + rs.getString("discount_value"));
+            System.out.println("====================================");
+
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void RegisterPromotionProduct(){
+        public void RegisterPromotionProduct(){
         PromotionService promotionService = new PromotionService();
         promotionService.printCurrentlyPromotion();
 
