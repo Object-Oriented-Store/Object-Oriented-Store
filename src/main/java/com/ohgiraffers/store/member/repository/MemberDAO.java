@@ -26,7 +26,7 @@ public class MemberDAO {
             throw new RuntimeException(e);
         }
     }
-
+    // 아이디 중복 확인
     public boolean isLoginIdDuplicate(String loginId) {
 
         String query = prop.getProperty("checkDuplicateId");
@@ -51,6 +51,7 @@ public class MemberDAO {
             }
         }
 
+    // 회원가입 정보 받기
     public int insertMember(MemberDTO member){
 
         String query = prop.getProperty("insertMemberJoin");
@@ -71,4 +72,34 @@ public class MemberDAO {
             throw new RuntimeException("회원가입 중 오류가 발생되었습니다.", e);
         }
     }
-}
+    // 아이디, 암호 일치 여부
+    public MemberDTO login(String loginId, String password){
+        String query = prop.getProperty("checkLogin");
+
+        try (Connection con = getConnection();
+            PreparedStatement pstmt = con.prepareStatement(query)){
+
+                pstmt.setString(1, loginId);
+                pstmt.setString(2, password);
+
+            ResultSet rset = pstmt.executeQuery();
+
+            if (rset.next()) {
+                rset.getInt("member_code");
+                rset.getInt("grade_code");
+                rset.getString("login_id");
+                rset.getString("password");
+                rset.getString("nickname");
+                rset.getInt("phone");
+                rset.getInt("point_balance");
+                rset.getInt("total_balance");
+            }
+            return null;
+
+        } catch (SQLException e) {
+            throw new RuntimeException("로그인 중 오류가 발생되었습니다.", e);
+        }
+    }
+
+    }
+
