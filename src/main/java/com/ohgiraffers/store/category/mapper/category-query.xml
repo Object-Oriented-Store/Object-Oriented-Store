@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+
+    <!-- 카테고리 전체 조회 -->
+    <entry key="category.selectAll">
+        SELECT category_code,
+               category_name
+          FROM tbl_category
+         ORDER BY category_code
+    </entry>
+
+</properties>
