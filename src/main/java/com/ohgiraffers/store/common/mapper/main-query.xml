@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+
+    <entry key="logIn">
+        SELECT
+        nickname
+        FROM
+        tbl_member
+        WHERE
+        login_id = ?
+        AND password = ?
+    </entry>
+
+    <entry key="membershipPasswordRead">
+        INSERT INTO
+        tbl_member
+        VALUES
+        (login_id, password, nickname, phone)
+    </entry>
+
+    <entry key="selectCategory">
+        SELECT
+        product_name,
+        product_price
+        FROM
+        tbl_product
+        WHERE
+        category_code = ?
+    </entry>
+
+</properties>
