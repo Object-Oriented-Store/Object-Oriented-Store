@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+
+    <entry key="PrintCurrentlyPromotion">
+        SELECT
+        promotion_name,
+        promotion_column
+        FROM
+        tbl_promotion;
+    </entry>
+
+    <entry key="RegisterPromotion">
+        INSERT INTO
+        tbl_promotion
+        VALUES
+        (promotion_name, promotion_column, discount_value);
+    </entry>
+
+    <entry key="UpdatePromotion">
+        UPDATE
+        tbl_promotion
+        SET
+        promotion_name = ?,
+        promotion_column = ?,
+        discount_value = ?,
+        promotion_status = ?
+        WHERE
+        promotion_code = ?;
+    </entry>
+
+    <entry key="DeletePromotion">
+        DELETE FROM tbl_promotion
+        WHERE promotion_code = ?;
+    </entry>
+
+    <entry key="RegisterPromotionProduct">
+        INSERT INTO tbl_promotion_product
+        VALUES (?, ?)
+    </entry>
+
+
+</properties>

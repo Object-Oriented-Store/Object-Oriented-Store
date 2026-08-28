@@ -65,7 +65,7 @@ public class MemberView {
         }
     }
 
-    private void joinMember(){
+    public void joinMember(){
 
         while(true){
         System.out.println();
