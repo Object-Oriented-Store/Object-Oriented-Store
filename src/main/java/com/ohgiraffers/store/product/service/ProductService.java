@@ -7,7 +7,6 @@ import com.ohgiraffers.store.product.repository.ProductDAO;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * 상품과 관련된 업무 규칙을 처리하는 계층이다.
@@ -57,7 +56,7 @@ public class ProductService {
 
     /**
      * 주문에 상품을 담기 직전 상품이 실제로 구매 가능한지 검사한다.
-     * 조회 화면에서는 N 상품도 보여주지만 구매 단계에서는 여기서 차단한다.
+     * 판매 가능 여부는 재고로 결정되므로 요청 수량보다 재고가 적으면 구매를 차단한다.
      *
      * 실제 주문을 저장할 때는 재고가 동시에 바뀔 수 있으므로 OrderService의
      * 트랜잭션 안에서도 같은 검사를 다시 수행해야 한다.
@@ -74,10 +73,6 @@ public class ProductService {
 
         if (product == null) {
             throw new IllegalStateException("존재하지 않는 상품이라 구매할 수 없습니다.");
-        }
-
-        if (!"Y".equals(product.getProductStatus())) {
-            throw new IllegalStateException("판매가 중지된 상품이라 구매할 수 없습니다.");
         }
 
         if (product.getStockQuantity() < quantity) {
@@ -118,10 +113,7 @@ public class ProductService {
         }
     }
 
-    /**
-     * 기존 상품의 이름, 가격, 재고, 카테고리를 수정한다.
-     * 판매상태는 changeProductStatus()에서 별도로 변경한다.
-     */
+    /** 기존 상품의 이름, 가격, 재고, 카테고리를 수정한다. */
     public boolean updateProduct(ProductDTO product) throws SQLException {
         validateProductForUpdate(product);
 
@@ -151,65 +143,8 @@ public class ProductService {
         }
     }
 
-    /**
-     * 상품을 물리적으로 DELETE하지 않고 판매상태만 Y 또는 N으로 바꾼다.
-     * 주문상세가 상품코드를 FK로 참조하므로 실제 행을 남겨 과거 주문을 보호한다.
-     */
-    public boolean changeProductStatus(int productCode, String productStatus)
-            throws SQLException {
-        validateProductCode(productCode);
-        String normalizedStatus = normalizeStatus(productStatus);
-
-        try (Connection connection = DBConnection.getConnection()) {
-            connection.setAutoCommit(false);
-
-            try {
-                if (productDAO.findByCode(connection, productCode) == null) {
-                    connection.rollback();
-                    return false;
-                }
-
-                int affectedRows = productDAO.updateProductStatus(
-                        connection,
-                        productCode,
-                        normalizedStatus
-                );
-
-                if (affectedRows == 1) {
-                    connection.commit();
-                    return true;
-                }
-
-                connection.rollback();
-                return false;
-            } catch (SQLException | RuntimeException exception) {
-                connection.rollback();
-                throw exception;
-            }
-        }
-    }
-
-    /** 판매를 중지하는 논리 삭제 기능이다. */
-    public boolean stopSellingProduct(int productCode) throws SQLException {
-        return changeProductStatus(productCode, "N");
-    }
-
-    /**
-     * 요구사항의 '상품 삭제'를 구현한다.
-     * 과거 주문의 FK 관계를 보호하기 위해 DELETE 대신 판매상태를 N으로 변경한다.
-     */
-    public boolean deleteProduct(int productCode) throws SQLException {
-        return stopSellingProduct(productCode);
-    }
-
-    /** 판매 중지된 상품을 다시 판매 가능 상태로 변경한다. */
-    public boolean resumeSellingProduct(int productCode) throws SQLException {
-        return changeProductStatus(productCode, "Y");
-    }
-
     private void validateProductForRegistration(ProductDTO product) {
         validateCommonProductFields(product);
-        product.setProductStatus(normalizeStatus(product.getProductStatus()));
     }
 
     private void validateProductForUpdate(ProductDTO product) {
@@ -247,18 +182,4 @@ public class ProductService {
         }
     }
 
-    /** y/n처럼 입력해도 DB에 저장할 Y/N 형태로 통일한다. */
-    private String normalizeStatus(String productStatus) {
-        if (productStatus == null) {
-            throw new IllegalArgumentException("판매상태를 입력해야 합니다.");
-        }
-
-        String normalizedStatus = productStatus.trim().toUpperCase(Locale.ROOT);
-
-        if (!"Y".equals(normalizedStatus) && !"N".equals(normalizedStatus)) {
-            throw new IllegalArgumentException("판매상태는 Y 또는 N이어야 합니다.");
-        }
-
-        return normalizedStatus;
-    }
 }

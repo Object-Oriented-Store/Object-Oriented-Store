@@ -46,8 +46,6 @@ public class ProductMenu {
                     case 4 -> searchProductsByName();
                     case 5 -> registerProduct();
                     case 6 -> updateProduct();
-                    case 7 -> deleteProduct();
-                    case 8 -> resumeSellingProduct();
                     case 0 -> {
                         System.out.println("상품 관리를 종료합니다.");
                         return;
@@ -76,8 +74,6 @@ public class ProductMenu {
         System.out.println("4. 상품명 검색");
         System.out.println("5. 판매 상품 등록");
         System.out.println("6. 판매 상품 수정");
-        System.out.println("7. 판매 상품 삭제");
-        System.out.println("8. 상품 판매 재개");
         System.out.println("0. 종료");
         System.out.println("========================================");
     }
@@ -117,7 +113,6 @@ public class ProductMenu {
 
         String productName = readText("상품명: ");
         int productPrice = readInt("상품가격: ");
-        String productStatus = readText("판매상태(Y/N): ");
         int stockQuantity = readInt("재고수량: ");
         printCategoryGuide();
         int categoryCode = readInt("카테고리코드: ");
@@ -126,7 +121,6 @@ public class ProductMenu {
         ProductDTO product = new ProductDTO(
                 productName,
                 productPrice,
-                productStatus,
                 stockQuantity,
                 categoryCode
         );
@@ -163,7 +157,6 @@ public class ProductMenu {
                 productCode,
                 productName,
                 productPrice,
-                existingProduct.getProductStatus(),
                 stockQuantity,
                 categoryCode
         );
@@ -172,26 +165,6 @@ public class ProductMenu {
             System.out.println("상품 수정 성공");
         } else {
             System.out.println("상품을 수정하지 못했습니다.");
-        }
-    }
-
-    private void deleteProduct() throws SQLException {
-        int productCode = readInt("삭제할 상품코드: ");
-
-        if (productController.deleteProduct(productCode)) {
-            System.out.println("상품을 삭제 처리했습니다. 해당 상품은 더 이상 구매할 수 없습니다.");
-        } else {
-            System.out.println("해당 상품을 찾을 수 없습니다.");
-        }
-    }
-
-    private void resumeSellingProduct() throws SQLException {
-        int productCode = readInt("판매를 재개할 상품코드: ");
-
-        if (productController.resumeSellingProduct(productCode)) {
-            System.out.println("상품 판매를 재개했습니다.");
-        } else {
-            System.out.println("해당 상품을 찾을 수 없습니다.");
         }
     }
 

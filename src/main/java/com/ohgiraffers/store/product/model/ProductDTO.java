@@ -8,7 +8,7 @@ package com.ohgiraffers.store.product.model;
  */
 public class ProductDTO {
 
-    /* 각 필드는 tbl_product의 컬럼과 대응한다. */
+    /* 각 필드는 tbl_product의 입력 가능한 컬럼과 대응한다. */
     private int productCode;
     private String productName;
     private int productPrice;
@@ -27,15 +27,31 @@ public class ProductDTO {
     public ProductDTO(
             String productName,
             int productPrice,
-            String productStatus,
             int stockQuantity,
             int categoryCode
     ) {
         this.productName = productName;
         this.productPrice = productPrice;
-        this.productStatus = productStatus;
         this.stockQuantity = stockQuantity;
         this.categoryCode = categoryCode;
+    }
+
+    /* 기존 상품 수정용이며 상태는 수정 후 조회할 때 XML 쿼리가 계산한다. */
+    public ProductDTO(
+            int productCode,
+            String productName,
+            int productPrice,
+            int stockQuantity,
+            int categoryCode
+    ) {
+        this(
+                productCode,
+                productName,
+                productPrice,
+                null,
+                stockQuantity,
+                categoryCode
+        );
     }
 
     /* DB에서 조회한 기존 상품의 모든 값을 담을 때 사용하는 생성자이다. */
@@ -83,10 +99,6 @@ public class ProductDTO {
         return productStatus;
     }
 
-    public void setProductStatus(String productStatus) {
-        this.productStatus = productStatus;
-    }
-
     public int getStockQuantity() {
         return stockQuantity;
     }
@@ -115,4 +127,5 @@ public class ProductDTO {
                 ", categoryCode=" + categoryCode +
                 '}';
     }
+
 }

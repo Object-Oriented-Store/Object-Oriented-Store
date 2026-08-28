@@ -35,10 +35,10 @@ public final class ProductControllerCheck {
                     + controller.validateProductPurchase(6, 1).getProductName());
 
             try {
-                /* 테스트 상품 50번은 product_status가 N이다. */
+                /* 테스트 상품 50번은 재고가 0개이므로 구매할 수 없다. */
                 controller.validateProductPurchase(50, 1);
             } catch (IllegalStateException exception) {
-                System.out.println("판매중지 상품 구매 차단 성공: " + exception.getMessage());
+                System.out.println("품절 상품 구매 차단 성공: " + exception.getMessage());
             }
 
             try {
