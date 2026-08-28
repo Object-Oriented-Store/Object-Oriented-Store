@@ -47,7 +47,6 @@ public final class ProductDAOCheck {
                 ProductDTO product = new ProductDTO(
                         "상품 DAO 테스트",
                         1000,
-                        "Y",
                         10,
                         2
                 );
@@ -58,17 +57,10 @@ public final class ProductDAOCheck {
 
                 product.setProductName("수정된 상품 DAO 테스트");
                 product.setProductPrice(1500);
-                product.setStockQuantity(20);
+                product.setStockQuantity(0);
                 int updateResult = productDAO.updateProduct(connection, product);
                 System.out.println("상품 수정 결과: " + updateResult);
-
-                int statusResult = productDAO.updateProductStatus(
-                        connection,
-                        product.getProductCode(),
-                        "N"
-                );
-                System.out.println("판매상태 변경 결과: " + statusResult);
-                System.out.println("변경된 상품: "
+                System.out.println("재고 0개 상품 상태 확인: "
                         + productDAO.findByCode(connection, product.getProductCode()));
             } finally {
                 connection.rollback();

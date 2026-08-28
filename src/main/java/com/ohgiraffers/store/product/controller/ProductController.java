@@ -49,15 +49,4 @@ public class ProductController {
         return productService.updateProduct(product);
     }
 
-    public boolean stopSellingProduct(int productCode) throws SQLException {
-        return productService.stopSellingProduct(productCode);
-    }
-
-    public boolean deleteProduct(int productCode) throws SQLException {
-        return productService.deleteProduct(productCode);
-    }
-
-    public boolean resumeSellingProduct(int productCode) throws SQLException {
-        return productService.resumeSellingProduct(productCode);
-    }
 }

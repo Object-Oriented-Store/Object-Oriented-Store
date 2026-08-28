@@ -38,8 +38,6 @@ public class ProductDAO {
             QueryProvider.getQuery(QUERIES, "product.insert");
     private static final String UPDATE_PRODUCT =
             QueryProvider.getQuery(QUERIES, "product.update");
-    private static final String UPDATE_PRODUCT_STATUS =
-            QueryProvider.getQuery(QUERIES, "product.updateStatus");
 
     /** 상품 전체 조회는 단독 조회이므로 이 메서드 안에서 연결을 열고 자동으로 닫는다. */
     public List<ProductDTO> findAll() throws SQLException {
@@ -133,9 +131,8 @@ public class ProductDAO {
         )) {
             statement.setString(1, product.getProductName());
             statement.setInt(2, product.getProductPrice());
-            statement.setString(3, product.getProductStatus());
-            statement.setInt(4, product.getStockQuantity());
-            statement.setInt(5, product.getCategoryCode());
+            statement.setInt(3, product.getStockQuantity());
+            statement.setInt(4, product.getCategoryCode());
 
             int affectedRows = statement.executeUpdate();
 
@@ -160,20 +157,6 @@ public class ProductDAO {
             statement.setInt(3, product.getStockQuantity());
             statement.setInt(4, product.getCategoryCode());
             statement.setInt(5, product.getProductCode());
-
-            return statement.executeUpdate();
-        }
-    }
-
-    /** 상품을 삭제하지 않고 판매 가능 여부만 Y 또는 N으로 변경한다. */
-    public int updateProductStatus(
-            Connection connection,
-            int productCode,
-            String productStatus
-    ) throws SQLException {
-        try (PreparedStatement statement = connection.prepareStatement(UPDATE_PRODUCT_STATUS)) {
-            statement.setString(1, productStatus);
-            statement.setInt(2, productCode);
 
             return statement.executeUpdate();
         }
