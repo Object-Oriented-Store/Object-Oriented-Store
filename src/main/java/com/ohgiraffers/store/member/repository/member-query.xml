@@ -16,28 +16,42 @@
         VALUES(1, ?, ?, ?, ?)
     </entry>
 
-    <entry key="">
-        SELECT password
+    <!-- 로그인 -->
+    <entry key="checklogin">
+        SELECT *
         FROM tbl_member
         WHERE login_id = ?
+        AND password = ?
     </entry>
 
-    <entry key="">
-        SELECT nickname, login_id, password,
+    <!-- 내정보 조회 -->
+    <entry key="selectMemberInfo">
+        SELECT login_id, password, nickname,
         phone, point_balance, total_amount
         FROM tbl_member
         WHERE member_code = ?
     </entry>
 
-    <!-- 포인트 적립  -->
-    <entry key="">
-        UPDATE tbl_member AS a
-        JOIN tbl_membership_grade AS b
-        ON a.grade_code = b.grade_code
-        JOIN tbl_payment AS c
-        ON a.member_code = c.member_code
-        SET point_balance = reward_rate * final_amount
-        WHERE payment_status = 'COMPLETED';
+    <!-- 내정보 수정-->
+    <entry key="modifyMemberInfo">
+        UPDATE tbl_member
+        SET password = ?,
+        nickname = ?,
+        phone = ?
+        WHERE member_code = ?
+    </entry>
+
+    <!-- 내 계정 탈퇴(보류)-->
+    <entry key="deleteMember">
+        DELETE
+        FROM tbl_member
+        WHERE member_code = ?
+    </entry>
+
+    <entry key="selectGradeName">
+        SELECT grade_name
+        FROM tbl_membership_grade
+        WHERE grade_code = ?
     </entry>
 
 </properties>
