@@ -33,26 +33,23 @@ public class SettingsOnlyManager {
 
     public void RegisterPromotion() {
         PromotionService promotionService = new PromotionService();
-
-        promotionService.printCurrentlyPromotion();
-
         PromotionDTO pd = new PromotionDTO();
-
+        System.out.println("============행사등록============");
         System.out.print("행사명: ");
-        pd.setPromotionName(sc.nextLine());
+        String promotionName = sc.nextLine();
         System.out.print("행사내용: ");
-        pd.setPromotionColumn(sc.nextLine());
+        String promotionColumn =  sc.nextLine();
         System.out.print("할인율: ");
-        pd.setDiscountValue(sc.nextInt());
+        int discount = Integer.parseInt(sc.nextLine());
         pd.setPromotionStatus("Y");
         String query = prop.getProperty("RegisterPromotion");
         try (Connection conn = DriverManager.getConnection(
                 "jdbc:mysql://localhost:3306/object_oriented_store", "oodbms", "oodbms");
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
-            pstmt.setString(1, pd.getPromotionName());
-            pstmt.setString(2, pd.getPromotionColumn());
-            pstmt.setInt(3, pd.getDiscountValue());
+            pstmt.setString(1, promotionName);
+            pstmt.setString(2, promotionColumn);
+            pstmt.setInt(3, discount);
             ResultSet rs = pstmt.executeQuery();
 
             System.out.println("==========새로 등록한 행사==========");

@@ -1,6 +1,9 @@
 package com.ohgiraffers.store.maincontroller;
 
+import com.ohgiraffers.store.member.model.MemberDTO;
 import com.ohgiraffers.store.member.model.Membership;
+import com.ohgiraffers.store.member.service.MemberService;
+import com.ohgiraffers.store.member.view.MemberView;
 import com.ohgiraffers.store.promotion.model.PromotionDAO;
 import com.ohgiraffers.store.promotion.service.PromotionService;
 import com.ohgiraffers.store.promotion.service.SettingsOnlyManager;
@@ -12,10 +15,12 @@ import java.util.Properties;
 import java.util.Scanner;
 
 public class Controller {
-    private final Scanner sc;
-    private final Membership mb;
-    private final Properties prop = new Properties();
-
+    Scanner sc = new Scanner(System.in);
+    Membership mb;
+    Properties prop = new Properties();
+    MemberService memberService = new MemberService();
+    MemberView  memberView = new MemberView();
+    MemberDTO membe = new MemberDTO();
     public Controller(Scanner sc) {
         this.sc = sc;
         this.mb = new Membership(sc);
@@ -27,6 +32,10 @@ public class Controller {
         } catch (IOException e) {
             throw new RuntimeException("쿼리 XML을 읽을 수 없습니다.", e);
         }
+    }
+
+    public Controller() {
+
     }
 
     public String Start() {
@@ -46,7 +55,7 @@ public class Controller {
                     sw = false;
                     return userName;
                 case 2:
-                    mb.createMembership();
+                    memberView.joinMember();
                     sw = false;
                     break;
                 default:
@@ -59,7 +68,7 @@ public class Controller {
     }
 
     public void SelectCategory(String userName){
-        System.out.printf("%s 고객님, 객체지향점에 오신 걸 환영합니다!\n", userName);
+        System.out.printf("%s 고객님, \n객체지향점에 오신 걸 환영합니다!\n", userName);
         System.out.println("==============카테고리==============");
         System.out.println("1. 행사제품");
         System.out.println("2. 라면류");
@@ -85,7 +94,7 @@ public class Controller {
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     System.out.println("상품명: " + rs.getString("product_name"));
-                    System.out.println("가격: " + rs.getString("product_price" + "원"));
+                    System.out.println("가격: " + rs.getString("product_price") + "원");
                     System.out.println();
                 }
             } catch (SQLException e) {
@@ -117,6 +126,7 @@ public class Controller {
         System.out.println("======================================");
         System.out.println("메뉴를 정수로 입력하세요: ");
         int choice3 = sc.nextInt();
+        sc.nextLine();
         switch (choice3){
             case 1:
                 service.printCurrentlyPromotion();
