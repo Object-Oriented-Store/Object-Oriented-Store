@@ -1,0 +1,140 @@
+package com.ohgiraffers.store.maincontroller;
+
+import com.ohgiraffers.store.promotion.model.PromotionDAO;
+//import com.ohgiraffers.store.promotion.repository.Membership;
+import com.ohgiraffers.store.promotion.service.PromotionService;
+import com.ohgiraffers.store.promotion.service.SettingsOnlyManager;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.*;
+import java.util.Properties;
+import java.util.Scanner;
+
+public class Controller {
+    private final Scanner sc;
+//    private final Membership mb;
+    private final Properties prop = new Properties();
+
+    public Controller(Scanner sc) {
+        this.sc = sc;
+//        this.mb = new Membership(sc);
+
+        try {
+            prop.loadFromXML(new FileInputStream(
+                    "src/main/java/com/ohgiraffers/store/common/mapper/main-query.xml"
+            ));
+        } catch (IOException e) {
+            throw new RuntimeException("쿼리 XML을 읽을 수 없습니다.", e);
+        }
+    }
+
+    public String Start() {
+
+        boolean sw = true;
+        String userName;
+        while (sw) {
+            System.out.println("==============객체지향점==============");
+            System.out.println("어서오세요, 객체지향 편의점 입니다~!");
+            System.out.println("1. 로그인");
+            System.out.println("2. 회원가입");
+            System.out.print("메뉴를 선택해 주세요: ");
+            int choice1 = sc.nextInt();
+            switch (choice1) {
+                case 1:
+//                    userName = mb.logIn();
+                    sw = false;
+//                    return userName;
+                case 2:
+//                    mb.createMembership();
+                    sw = false;
+                    break;
+                default:
+                    System.out.println("잘못입력하셨습니다. 메인화면으로 돌아갑니다.");
+
+            }
+        }
+
+        return "";
+    }
+
+    public void SelectCategory(String userName){
+        System.out.printf("%s 고객님, 객체지향점에 오신 걸 환영합니다!\n", userName);
+        System.out.println("==============카테고리==============");
+        System.out.println("1. 행사제품");
+        System.out.println("2. 라면류");
+        System.out.println("3. 과자류");
+        System.out.println("4. 간편식품");
+        System.out.println("5. 신선제품");
+        System.out.println("6. 음료");
+        System.out.println("7. 아이스크림");
+        System.out.println("8. 생활용품");
+        System.out.println("9. 주류");
+        System.out.println("10. 담배");
+        System.out.println("====================================");
+        System.out.print("메뉴를 정수로 입력하세요: ");
+        int choice2 = sc.nextInt();
+
+        String sql = prop.getProperty("selectCategory");
+        try (Connection conn = DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/object_oriented_store", "oodbms", "oodbms");
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, choice2);
+
+            System.out.println("===================================");
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    System.out.println("상품명: " + rs.getString("product_name"));
+                    System.out.println("가격: " + rs.getString("product_price" + "원"));
+                    System.out.println();
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            sc.nextLine();
+            System.out.println("===================================");
+            System.out.println("구매할 상품명을 입력하세요: ");
+            String selectProductName = sc.nextLine();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+
+    }
+
+    public void startManager()  {
+        PromotionDAO  pdao = new PromotionDAO();
+        PromotionService service = new PromotionService();
+        SettingsOnlyManager som = new SettingsOnlyManager(sc);
+        System.out.println("==============객체지향점==============");
+        System.out.println("[관리자용 메뉴]");
+        System.out.println("1. 진행중인 행사 조회");
+        System.out.println("2. 기존 행사 등록");
+        System.out.println("3. 기존 행사 수정");
+        System.out.println("4. 기존 행사 삭제");
+        System.out.println("======================================");
+        System.out.println("메뉴를 정수로 입력하세요: ");
+        int choice3 = sc.nextInt();
+        switch (choice3){
+            case 1:
+
+                service.printCurrentlyPromotion();
+                break;
+            case 2:
+                som.RegisterPromotion();
+                break;
+            case 3:
+                som.UpdatePromotion();
+                break;
+            case 4:
+                som.DeletePromotion();
+                break;
+            default:
+                System.out.println("잘못입력하셨습니다. 이전 단계로 돌아갑니다.");
+                startManager();
+                break;
+        }
+
+    }
+}
