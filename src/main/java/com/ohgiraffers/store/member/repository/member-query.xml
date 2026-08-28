@@ -4,29 +4,29 @@
     <comment> MemberDAO SQL Query </comment>
 
     <!-- 아이디 중복 확인 -->
-    <entry key="selectMemberByLoginId">
-        SELECT count(*) AS 'ID 중복 확인'
+    <entry key="checkDuplicateId">
+        SELECT count(*) AS member_count
         FROM tbl_member
-        WHERE login_id = ? ;
+        WHERE login_id = ?
     </entry>
 
     <!-- 회원 가입 -->
     <entry key="insertMemberJoin">
         INSERT INTO tbl_member (grade_code, login_id, password, nickname, phone)
-        VALUES(1, ?, ?, ?, ?);
+        VALUES(1, ?, ?, ?, ?)
     </entry>
 
     <entry key="">
         SELECT password
         FROM tbl_member
-        WHERE login_id = ?;
+        WHERE login_id = ?
     </entry>
 
     <entry key="">
         SELECT nickname, login_id, password,
         phone, point_balance, total_amount
         FROM tbl_member
-        WHERE member_code = ?;
+        WHERE member_code = ?
     </entry>
 
     <!-- 포인트 적립  -->

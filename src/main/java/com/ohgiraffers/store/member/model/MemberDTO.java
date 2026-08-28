@@ -49,7 +49,7 @@ public class MemberDTO {
         this.totalAmount = totalAmount;
     }
 
-    // 회원이 직접 수정할 수 없는 시스템 값이므로 getter만 제공
+    // 회원이 직접 (memberCode, pointBalance, totalAmount, gradeCode, LoginId) 수정할 수 없도록 getter만 제공
     public int getMemberCode() {
         return memberCode;
     }
