@@ -46,6 +46,7 @@ public class ProductMenu {
                     case 4 -> searchProductsByName();
                     case 5 -> registerProduct();
                     case 6 -> updateProduct();
+                    case 7 -> openPromotionManagement();
                     case 0 -> {
                         System.out.println("상품 관리를 종료합니다.");
                         return;
@@ -74,6 +75,7 @@ public class ProductMenu {
         System.out.println("4. 상품명 검색");
         System.out.println("5. 판매 상품 등록");
         System.out.println("6. 판매 상품 수정");
+        System.out.println("7. 행사 관리");
         System.out.println("0. 종료");
         System.out.println("========================================");
     }
@@ -166,6 +168,24 @@ public class ProductMenu {
         } else {
             System.out.println("상품을 수정하지 못했습니다.");
         }
+    }
+
+    /**
+     * 행사 담당 팀원의 메뉴로 이동할 연결 지점이다.
+     * 행사 기능이 합쳐지기 전에는 안내만 출력하고, 합쳐진 뒤에는 이 메서드 내부에서
+     * 팀원이 만든 PromotionMenu의 실행 메서드를 호출하면 된다.
+     */
+    private void openPromotionManagement() {
+        System.out.println("[행사 관리]");
+        System.out.println("행사 관리 기능은 담당 팀원의 기능과 연결될 예정입니다.");
+
+        /*
+         * TODO 행사 팀 코드가 합쳐지면 다음 두 작업만 수행한다.
+         * 1. 파일 위쪽에 팀원의 PromotionMenu 클래스를 import한다.
+         * 2. 위 안내 출력 대신 다음과 같이 행사 메뉴를 실행한다.
+         *
+         * new PromotionMenu().run();
+         */
     }
 
     private int readInt(String message) {
