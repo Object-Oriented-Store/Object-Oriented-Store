@@ -148,8 +148,8 @@ public class MemberView {
             System.out.printf(" 휴대폰 번호 : %08d%n", memberinfo.getPhone());
             System.out.println(" 보유 포인트 : " + memberinfo.getPointBalance());
             System.out.println(" 총 구매 누적 금액 : " + memberinfo.getTotalAmount());
-            System.out.println("----------------------------------------");
 
+            System.out.println("----------------------------------------");
             System.out.println("  1. 회원정보 수정");
             System.out.println("  2. 메인 화면으로");
             System.out.println("  3. 프로그램 종료");
@@ -162,6 +162,7 @@ public class MemberView {
                 case 1:
                     modifyMemberMenu(loggedInMember);
                     break;
+
                 case 2:
                     System.out.println("메인 화면으로 이동합니다.");
                     return;
