@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+
+    <!-- 상품 전체 조회 -->
+    <entry key="product.selectAll">
+        SELECT product_code,
+               product_name,
+               product_price,
+               CASE
+                   WHEN stock_quantity >= 1 THEN 'Y'
+                   ELSE 'N'
+               END AS product_status,
+               stock_quantity,
+               category_code
+          FROM tbl_product
+         ORDER BY product_code
+    </entry>
+
+    <!-- 상품코드로 상품 한 건 조회 -->
+    <entry key="product.selectByCode">
+        SELECT product_code,
+               product_name,
+               product_price,
+               CASE
+                   WHEN stock_quantity >= 1 THEN 'Y'
+                   ELSE 'N'
+               END AS product_status,
+               stock_quantity,
+               category_code
+          FROM tbl_product
+         WHERE product_code = ?
+    </entry>
+
+    <!-- 카테고리코드로 상품 목록 조회 -->
+    <entry key="product.selectByCategoryCode">
+        SELECT product_code,
+               product_name,
+               product_price,
+               CASE
+                   WHEN stock_quantity >= 1 THEN 'Y'
+                   ELSE 'N'
+               END AS product_status,
+               stock_quantity,
+               category_code
+          FROM tbl_product
+         WHERE category_code = ?
+         ORDER BY product_code
+    </entry>
+
+    <!-- 상품명에 검색어가 포함된 상품 조회 -->
+    <entry key="product.searchByName">
+        SELECT product_code,
+               product_name,
+               product_price,
+               CASE
+                   WHEN stock_quantity >= 1 THEN 'Y'
+                   ELSE 'N'
+               END AS product_status,
+               stock_quantity,
+               category_code
+          FROM tbl_product
+         WHERE product_name LIKE ?
+         ORDER BY product_code
+    </entry>
+
+    <!-- 상품 등록 -->
+    <entry key="product.insert">
+        INSERT INTO tbl_product
+               (product_name,
+                product_price,
+                stock_quantity,
+                category_code)
+        VALUES (?, ?, ?, ?)
+    </entry>
+
+    <!-- 상품 기본 정보 수정 -->
+    <entry key="product.update">
+        UPDATE tbl_product
+           SET product_name = ?,
+               product_price = ?,
+               stock_quantity = ?,
+               category_code = ?
+         WHERE product_code = ?
+    </entry>
+
+</properties>

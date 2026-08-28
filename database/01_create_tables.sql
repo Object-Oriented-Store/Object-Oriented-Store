@@ -50,14 +50,11 @@ CREATE TABLE `tbl_product` (
     `product_code` INT NOT NULL AUTO_INCREMENT COMMENT '상품식별코드',
     `product_name` VARCHAR(255) NOT NULL COMMENT '상품명',
     `product_price` INT NOT NULL COMMENT '상품판매가격',
-    `product_status` VARCHAR(1) NOT NULL DEFAULT 'Y' COMMENT '판매가능여부',
     `stock_quantity` INT NOT NULL DEFAULT 0 COMMENT '현재재고수량',
     `category_code` INT NOT NULL COMMENT '카테고리식별코드',
     CONSTRAINT `PK_TBL_PRODUCT` PRIMARY KEY (`product_code`),
     CONSTRAINT `CHK_PRODUCT_PRICE`
         CHECK (`product_price` >= 0),
-    CONSTRAINT `CHK_PRODUCT_STATUS`
-        CHECK (`product_status` IN ('Y', 'N')),
     CONSTRAINT `CHK_PRODUCT_STOCK_QUANTITY`
         CHECK (`stock_quantity` >= 0),
     CONSTRAINT `FK_CATEGORY_TO_PRODUCT`
