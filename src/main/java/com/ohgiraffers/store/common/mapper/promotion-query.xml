@@ -4,15 +4,15 @@
 
     <entry key="PrintCurrentlyPromotion">
         SELECT
-        promotion_code
-        promotion_name,
-        promotion_column,
-        discount_value,
-        promotion_status
+            promotion_code
+            promotion_name,
+            promotion_column,
+            discount_value,
+            promotion_status
         FROM
-        tbl_promotion
+            tbl_promotion
         WHERE
-        promotion_status = 'Y';
+            promotion_status = 'Y';
     </entry>
 
     <entry key="RegisterPromotion">

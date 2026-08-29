@@ -27,24 +27,24 @@ public class PromotionService {
         }
     }
 
-    public void printCurrentlyPromotion(Connection conn) throws SQLException {
+    public void printCurrentlyPromotion(Connection conn)  {
+
         String sql = prop.getProperty("PrintCurrentlyPromotion");
         System.out.println("===================================");
-        PreparedStatement pstmt = conn.prepareStatement(sql); {
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    if (Objects.equals(rs.getString("promotion_status"), "Y")) {
-                        System.out.println("행사코드: " + rs.getInt("promotion_code"));
-                        System.out.println("행사명: " + rs.getString("promotion_name"));
-                        System.out.println("행사내용: " + rs.getString("promotion_column"));
-                        System.out.println("할인율: " + rs.getString("discount_value") + "%");
-                        System.out.println();
-                    }
-                }
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+
+        try (conn; PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                System.out.println("행사코드: " + rs.getInt("promotion_code"));
+                System.out.println("행사명: " + rs.getString("promotion_name"));
+                System.out.println("행사내용: " + rs.getString("promotion_column"));
+                System.out.println("할인율: " + rs.getInt("discount_value") + "%");
+                System.out.println();
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
+
     }
 
     public ResultSet updatePromotion(int wc){

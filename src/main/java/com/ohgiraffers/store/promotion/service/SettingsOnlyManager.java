@@ -89,16 +89,12 @@ public class SettingsOnlyManager {
         PromotionDAO promotionDAO = new PromotionDAO();
 
         System.out.print("기존의 행사 목록을 조회하시겠습니까?");
-        System.out.print("(1-Yes, 0-No): ");
+        System.out.print("(1-Yes, 이외의 키-No): ");
         int WannaRead = sc.nextInt();
         if (WannaRead == 1) {
-            try {
-                ps.printCurrentlyPromotion(conn);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+            ps.printCurrentlyPromotion(conn);
         }
-        System.out.println("================================");
+        System.out.println("===================================");
         System.out.print("수정할 행사의 행사코드를 입력하세요: ");
         int WannaCode =  sc.nextInt();
 
@@ -119,18 +115,11 @@ public class SettingsOnlyManager {
         PromotionService ps = new PromotionService();
         PromotionDAO promotionDAO = new PromotionDAO();
 
-        System.out.print("기존의 행사 목록을 조회하시겠습니까?(1-Yes, 0-No)");
+        System.out.print("기존의 행사 목록을 조회하시겠습니까?(1-Yes, 이외의 키-No)");
         int WannaRead = sc.nextInt();
         if (WannaRead == 1) {
-            try {
-                ps.printCurrentlyPromotion(conn);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+            ps.printCurrentlyPromotion(conn);
 
-        } else if(WannaRead != 0){
-            System.out.println("잘못입력하셨습니다. 다시 메뉴가 시작됩니다. ");
-            DeletePromotion();
         }
         System.out.println("================================");
         System.out.println("삭제할 행사의 행사코드를 입력하세요: ");

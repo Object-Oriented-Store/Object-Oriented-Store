@@ -91,14 +91,11 @@ public class Controller {
             pstmt.setInt(1, choice2);
 
             System.out.println("===================================");
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    System.out.println("상품명: " + rs.getString("product_name"));
-                    System.out.println("가격: " + rs.getString("product_price") + "원");
-                    System.out.println();
-                }
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                System.out.println("상품명: " + rs.getString("product_name"));
+                System.out.println("가격: " + rs.getString("product_price") + "원");
+                System.out.println();
             }
             sc.nextLine();
             System.out.println("===================================");
