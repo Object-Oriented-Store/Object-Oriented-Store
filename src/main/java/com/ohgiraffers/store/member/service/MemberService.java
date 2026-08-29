@@ -145,6 +145,7 @@ public class MemberService {
         return gradeResult > 0;
     }
 
+    // 멤버십 등급 업데이트
     public boolean updateMembershipGrade(int memberCode){
 
         if (memberCode <= 0){
@@ -152,6 +153,87 @@ public class MemberService {
         }
 
         int result = memberGradeDAO.updateMembershipGrade(memberCode);
+
+        return result > 0;
+    }
+
+    // 포인트 적립
+    public boolean earnPoint(int memberCode, int finalAmount) {
+
+        if (memberCode <= 0 || finalAmount <= 0) {
+            return false;
+        }
+
+        int rewardRate = memberGradeDAO.selectRewardRate(memberCode);
+
+        int earnedPoint = finalAmount * rewardRate / 100;
+
+        // BASIC 회원은 0%로 적립할 포인트가 없으나 정상 처리로 간주
+        if (earnedPoint <= 0) {
+            return true;
+        }
+
+        int result = memberDAO.plusPointBalance(memberCode, earnedPoint);
+
+        return result > 0;
+    }
+
+    // 결제 취소로 인한 사용된 포인트 복구
+    public boolean restoreUsedPoint(int memberCode, int usedPoint) {
+        if (memberCode <= 0 || usedPoint < 0) {
+            return false;
+        }
+        // 결제 시 사용한 포인트가 없어도 정상 처리
+        if (usedPoint == 0) {
+            return true;
+        }
+
+        int result = memberDAO.plusPointBalance(memberCode, usedPoint);
+
+        return result > 0;
+    }
+
+    // 포인트 차감(사용)
+    public int useAllPoint(int memberCode, int paymentAmount) {
+        if (memberCode <= 0 || paymentAmount <= 0) {
+            return -1;
+        }
+        MemberDTO lookupMember = new MemberDTO(memberCode, "", "");
+
+        MemberDTO memberInfo = memberDAO.selectMember(lookupMember);
+
+        if (memberInfo == null) {
+            return -1;
+        }
+
+        int pointBalance = memberInfo.getPointBalance();
+
+        // 사용할 포인트가 없을 경우 0 반환
+        if (pointBalance <= 0) {
+            return 0;
+        }
+
+        // 보유 포인트와 결제할 금액 중 작은 값 사용
+        int usedPoint = Math.min(pointBalance, paymentAmount);
+
+        int result = memberDAO.minusPointBalance(memberCode, usedPoint);
+
+        if (result <= 0) {
+            return -1;
+        }
+        return usedPoint;
+    }
+    // 결제 취소 시 지급된 포인트 회수
+    public boolean cancelEarnedPoint(int memberCode, int earnedPoint) {
+        if (memberCode <= 0 || earnedPoint < 0) {
+            return false;
+        }
+
+        if (earnedPoint == 0) {
+            return true;
+        }
+
+        int result = memberDAO.minusPointBalance(memberCode, earnedPoint);
 
         return result > 0;
     }

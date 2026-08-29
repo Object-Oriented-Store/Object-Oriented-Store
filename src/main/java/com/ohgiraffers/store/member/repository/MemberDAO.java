@@ -185,5 +185,38 @@ public class MemberDAO {
             throw new RuntimeException("누적 금액 차감 오류가 발생되었습니다.", e);
         }
     }
+
+    // 포인트 적립 및 반환
+    public int plusPointBalance(int memberCode, int pointAmount){
+        String query = prop.getProperty("increasePointBalance");
+
+        try (Connection con = getConnection();
+            PreparedStatement pstmt = con.prepareStatement(query)){
+
+            pstmt.setInt(1,pointAmount);
+            pstmt.setInt(2,memberCode);
+
+            return pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
+    // 포인트 차감
+    public int minusPointBalance(int memberCode, int pointAmount){
+        String query = prop.getProperty("decreasePointBalance");
+
+        try (Connection con = getConnection();
+             PreparedStatement pstmt = con.prepareStatement(query)){
+
+            pstmt.setInt(1,pointAmount);
+            pstmt.setInt(2,memberCode);
+
+            return pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    }

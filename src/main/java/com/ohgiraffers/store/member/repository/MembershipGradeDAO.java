@@ -63,4 +63,25 @@ public class MembershipGradeDAO {
                 throw new RuntimeException(e);
             }
         }
+
+        public int selectRewardRate(int memberCode){
+            String query = prop.getProperty("selectRewardRate");
+
+            try (Connection con = getConnection();
+                PreparedStatement pstmt = con.prepareStatement(query)){
+
+                pstmt.setInt(1,memberCode);
+
+                try(ResultSet rset = pstmt.executeQuery()){
+
+                    if (rset.next()){
+                        return rset.getInt("reward_rate");
+                    }
+                }
+                return 0;
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }

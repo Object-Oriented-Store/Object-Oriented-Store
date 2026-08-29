@@ -81,13 +81,28 @@
         WHERE member_code = ?
     </entry>
 
-    <!-- 적립률 조회 -->
+    <!-- 적립률 조회(DB용) -->
     <entry key="selectRewardRate">
-        SELECT mg.reward_rate
+        SELECT msg.reward_rate
         FROM tbl_member m
-        JOIN tbl_membership_grade mg
-        ON m.grade_code = mg.grade_code
+        JOIN tbl_membership_grade msg
+        ON m.grade_code = msg.grade_code
         WHERE m.member_code = ?
+    </entry>
+
+    <!-- 포인트 적립 및 반환 -->
+    <entry key="increasePointBalance">
+        UPDATE tbl_member
+        SET point_balance = point_balance + ?
+        WHERE member_code = ?
+    </entry>
+
+    <!-- 포인트 차감 -->
+    <entry key="decreasePointBalance">
+        UPDATE tbl_member
+        SET point_balance = point_balance - ?
+        WHERE member_code = ?
+        AND point_balance >= ?
     </entry>
 
 </properties>

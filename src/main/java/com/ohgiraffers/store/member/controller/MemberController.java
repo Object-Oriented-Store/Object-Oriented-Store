@@ -36,6 +36,23 @@ public class MemberController {
     public boolean updateMembershipGrade(int memberCode){
         return memberService.updateMembershipGrade(memberCode);
     }
+
+    // 포인트 적립
+    public boolean earnPoint(int memberCode, int finalAmount){
+        return memberService.earnPoint(memberCode, finalAmount);
+    }
+
+    // 결제 시 사용된 포인트 복구
+    public boolean restoreUsedPoint(int memberCode, int usePoint){
+        return memberService.restoreUsedPoint(memberCode, usePoint);
+    }
+
+    // 포인트 차감
+    public int useAllPoint(int memberCode, int paymentAmount){
+        return memberService.useAllPoint(memberCode,paymentAmount);
+    }
+
+    public boolean cancelEarnedPoint(int memberCode, int earnedPoint) {
+        return memberService.cancelEarnedPoint(memberCode, earnedPoint);
+    }
 }
-
-
