@@ -32,6 +32,10 @@ public class MemberController {
     public boolean minusTotalAmount(int memberCode, int previousTotalAmount){
         return memberService.minusTotalAmount(memberCode,previousTotalAmount);
     }
+
+    public boolean updateMembershipGrade(int memberCode){
+        return memberService.updateMembershipGrade(memberCode);
+    }
 }
 
 

@@ -48,4 +48,19 @@ public class MembershipGradeDAO {
                 throw new RuntimeException("멤버십 등급명 조회 중 오류가 발생했습니다.", e);
             }
         }
+
+        public int updateMembershipGrade(int memberCode){
+            String query = prop.getProperty("updateMembershipGrade");
+
+            try (Connection con = getConnection();
+                PreparedStatement pstmt = con.prepareStatement(query)){
+
+                pstmt.setInt(1, memberCode);
+
+                return pstmt.executeUpdate();
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }

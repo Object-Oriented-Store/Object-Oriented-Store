@@ -114,9 +114,15 @@ public class MemberService {
         if (finalAmount <= 0){
             return false;
         }
-        int result = memberDAO.plusTotalAmount(memberCode, finalAmount);
+        int amountResult = memberDAO.plusTotalAmount(memberCode, finalAmount);
 
-        return result > 0;
+        if (amountResult <= 0){
+            return false;
+        }
+
+        int gradeResult = memberGradeDAO.updateMembershipGrade(memberCode);
+
+        return gradeResult > 0;
     }
 
     // 누적 구매 금액 차감
@@ -128,7 +134,24 @@ public class MemberService {
         if (previousAmount <= 0){
             return false;
         }
-        int result = memberDAO.minusTotalAmount(memberCode, previousAmount);
+        int amountResult = memberDAO.minusTotalAmount(memberCode, previousAmount);
+
+        if (amountResult <= 0){
+            return false;
+        }
+
+        int gradeResult = memberGradeDAO.updateMembershipGrade(memberCode);
+
+        return gradeResult > 0;
+    }
+
+    public boolean updateMembershipGrade(int memberCode){
+
+        if (memberCode <= 0){
+            return false;
+        }
+
+        int result = memberGradeDAO.updateMembershipGrade(memberCode);
 
         return result > 0;
     }

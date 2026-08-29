@@ -74,9 +74,9 @@
         UPDATE tbl_member
         SET grade_code =
         CASE
-        WHEN total_amount >= 200000 THEN 3
-        WHEN total_amount >= 50000 THEN 2
-        ELSE 1
+            WHEN total_amount >= 200000 THEN 3
+            WHEN total_amount >= 50000 THEN 2
+            ELSE 1
         END
         WHERE member_code = ?
     </entry>
