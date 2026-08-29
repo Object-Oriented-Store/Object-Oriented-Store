@@ -20,6 +20,10 @@ public class MemberDTO {
         this.password = password;
     }
 
+    public MemberDTO(int memberCode, String nickname) {
+        this.memberCode = memberCode;
+        this.nickname = nickname;
+    }
 
     // 멤버십 정보 수정 생성자
     public MemberDTO(int memberCode, String password, String nickname, int phone) {
@@ -35,6 +39,14 @@ public class MemberDTO {
         this.password = password;
         this.nickname = nickname;
         this.phone = phone;
+    }
+
+    public MemberDTO(String loginId, String nickname, int phone, int pointBalance, int totalAmount) {
+        this.loginId = loginId;
+        this.nickname = nickname;
+        this.phone = phone;
+        this.pointBalance = pointBalance;
+        this.totalAmount = totalAmount;
     }
 
     // DB에서 조회한 회원의 전체 정보를 담는 생성자

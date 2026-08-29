@@ -14,13 +14,6 @@ public class MemberController {
         return memberService.joinMember(member);
     }
 
-    // LoginId 및 password 받기
-    public MemberDTO loginMember(String loginId, String password) {
-
-        MemberDTO member = new MemberDTO(loginId, password);
-
-        return memberService.loginMember(member);
-    };
     public MemberDTO selectMember(MemberDTO loginMember) {
         return memberService.selectMember(loginMember);
     }

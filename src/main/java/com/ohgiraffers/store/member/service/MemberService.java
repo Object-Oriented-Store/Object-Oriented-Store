@@ -8,6 +8,7 @@ public class MemberService {
 
     private final MemberDAO memberDAO = new MemberDAO();
     private final MembershipGradeDAO memberGradeDAO = new MembershipGradeDAO();
+    private final MemberDTO memberDTO = new MemberDTO();
 
     public boolean joinMember(MemberDTO member) {
 
@@ -45,44 +46,14 @@ public class MemberService {
         return result > 0;
     }
 
-    // 로그인 입력값 검증
-    public MemberDTO loginMember(MemberDTO member) {
-
-        if (member == null) {
+    public MemberDTO selectMember(MemberDTO loggedInMember){
+        if(loggedInMember == null){
             return null;
         }
-
-        if (member.getLoginId() == null || member.getLoginId().isBlank()) {
+        if (loggedInMember.getMemberCode() <= 0){
             return null;
         }
-
-        if (member.getPassword() == null || member.getPassword().isBlank()) {
-            return null;
-        }
-        return memberDAO.login(member.getLoginId(), member.getPassword()
-        );
-    }
-
-    // 로그인한 회원의 등급명 조회
-    public String findGradeName(MemberDTO loginMember) {
-
-        if (loginMember == null) {
-            return null;
-        }
-        return memberGradeDAO.selectGradeName(loginMember.getGradeCode()
-        );
-    }
-
-    // 로그인한 회원의 정보 조회 (로그인이 안되어 있거나 가입된 계정이 아닐 시 null)
-    public MemberDTO selectMember(MemberDTO loginMember) {
-
-        if (loginMember == null) {
-            return null;
-        }
-        if (loginMember.getMemberCode() <= 0) {
-            return null;
-        }
-        return memberDAO.selectMember(loginMember);
+        return memberDAO.selectMember(loggedInMember);
     }
 
     // 정보 수정

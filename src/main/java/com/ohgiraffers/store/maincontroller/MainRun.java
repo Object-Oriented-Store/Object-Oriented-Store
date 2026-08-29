@@ -1,6 +1,7 @@
 package com.ohgiraffers.store.maincontroller;
 
 //import com.ohgiraffers.store.promotion.repository.Membership;
+import com.ohgiraffers.store.member.model.MemberDTO;
 import com.ohgiraffers.store.member.model.Membership;
 import com.ohgiraffers.store.promotion.controller.PromotionRun;
 import com.ohgiraffers.store.promotion.service.SettingsOnlyManager;
@@ -16,7 +17,7 @@ public class MainRun {
         Membership membership = new Membership(sc);
         Controller cl =  new Controller(sc);
 
-        String userName = cl.Start(); //시작화면 메소드 호출
-        cl.SelectCategory(userName);
+        MemberDTO loggedInMember = cl.Start(); //시작화면 메소드 호출
+        cl.startMember(loggedInMember);
     }
 }

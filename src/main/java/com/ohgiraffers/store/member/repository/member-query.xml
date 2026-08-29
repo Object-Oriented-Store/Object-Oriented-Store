@@ -16,14 +16,6 @@
         VALUES(1, ?, ?, ?, ?)
     </entry>
 
-    <!-- 로그인 -->
-    <entry key="checkLogin">
-        SELECT *
-        FROM tbl_member
-        WHERE login_id = ?
-        AND password = ?
-    </entry>
-
     <!-- 내정보 조회 -->
     <entry key="selectMemberInfo">
         SELECT member_code, grade_code, login_id, password, nickname,

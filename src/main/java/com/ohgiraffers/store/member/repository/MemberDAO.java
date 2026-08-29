@@ -72,34 +72,6 @@ public class MemberDAO {
             throw new RuntimeException("회원가입 중 오류가 발생되었습니다.", e);
         }
     }
-    // 아이디, 암호 일치 여부
-    public MemberDTO login(String loginId, String password){
-        String query = prop.getProperty("checkLogin");
-
-        try (Connection con = getConnection();
-            PreparedStatement pstmt = con.prepareStatement(query)){
-
-                pstmt.setString(1, loginId);
-                pstmt.setString(2, password);
-
-            ResultSet rset = pstmt.executeQuery();
-
-            if (rset.next()) {
-                return  new MemberDTO(
-                rset.getInt("member_code"),
-                rset.getInt("grade_code"),
-                rset.getString("login_id"),
-                rset.getString("password"),
-                rset.getString("nickname"),
-                rset.getInt("phone"),
-                rset.getInt("point_balance"),
-                rset.getInt("total_amount"));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("로그인 중 오류가 발생되었습니다.", e);
-        }
-        return null;
-    }
 
     // 정보 조회
     public MemberDTO selectMember(MemberDTO member) {
