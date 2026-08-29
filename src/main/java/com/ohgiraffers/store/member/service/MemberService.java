@@ -6,6 +6,7 @@ import com.ohgiraffers.store.member.repository.MembershipGradeDAO;
 
 public class MemberService {
 
+    // Service는 입력값과 업무 규칙을 검증한 뒤 필요한 DAO를 호출
     private final MemberDAO memberDAO = new MemberDAO();
     private final MembershipGradeDAO memberGradeDAO = new MembershipGradeDAO();
     private final MemberDTO memberDTO = new MemberDTO();
@@ -120,6 +121,7 @@ public class MemberService {
             return false;
         }
 
+        // 누적 금액이 변경된 직후 현재 누적 금액을 기준으로 등급도 다시 계산
         int gradeResult = memberGradeDAO.updateMembershipGrade(memberCode);
 
         return gradeResult > 0;
@@ -140,6 +142,7 @@ public class MemberService {
             return false;
         }
 
+        // 결제 취소로 누적 금액이 줄면 등급이 내려갈 수도 있으므로 다시 계산
         int gradeResult = memberGradeDAO.updateMembershipGrade(memberCode);
 
         return gradeResult > 0;
@@ -195,9 +198,11 @@ public class MemberService {
 
     // 포인트 차감(사용)
     public int useAllPoint(int memberCode, int paymentAmount) {
+        // 반환값: -1은 처리 실패, 0은 사용할 포인트 없음, 양수는 실제 사용 포인트
         if (memberCode <= 0 || paymentAmount <= 0) {
             return -1;
         }
+        // 회원 코드만 담은 조회용 DTO로 현재 포인트 잔액을 DB에서 확인
         MemberDTO lookupMember = new MemberDTO(memberCode, "", "");
 
         MemberDTO memberInfo = memberDAO.selectMember(lookupMember);
@@ -234,6 +239,28 @@ public class MemberService {
         }
 
         int result = memberDAO.minusPointBalance(memberCode, earnedPoint);
+
+        return result > 0;
+    }
+
+    // 멤버십 탈퇴
+    public boolean withdrawMember(MemberDTO loggedInMember) {
+        if (loggedInMember == null) {
+            return false;
+        }
+
+        if (loggedInMember.getMemberCode() <= 0) {
+            return false;
+        }
+
+        // 관리자 계정 탈퇴 방지
+        if ("admin".equals(loggedInMember.getLoginId())) {
+            System.out.println("관리자 계정 탈퇴 불가");
+            return false;
+        }
+
+        // 주문 외래 키를 유지하기 위해 행을 삭제하지 않고 회원 정보를 탈퇴 상태로 비식별 처리
+        int result = memberDAO.withdrawMember(loggedInMember.getMemberCode());
 
         return result > 0;
     }

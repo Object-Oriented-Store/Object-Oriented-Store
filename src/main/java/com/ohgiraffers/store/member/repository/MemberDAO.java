@@ -15,9 +15,11 @@ import static com.ohgiraffers.store.common.config.DBConnection.getConnection;
 
 public class MemberDAO {
 
+    // XML에 저장된 SQL을 키값으로 조회하기 위한 객체
     private final Properties prop = new Properties();
 
     public MemberDAO(){
+        // DAO 생성 시 회원 관련 SQL이 들어 있는 XML 파일을 한 번 불러옴
         try (FileInputStream fis = new FileInputStream("src/main/java/com/ohgiraffers/store/member/repository/member-query.xml"
         )) { prop.loadFromXML(fis);
         } catch (FileNotFoundException e) {
@@ -212,11 +214,31 @@ public class MemberDAO {
 
             pstmt.setInt(1,pointAmount);
             pstmt.setInt(2,memberCode);
+            // SQL의 세 번째 조건에서 현재 포인트가 차감액 이상인지 확인
+            pstmt.setInt(3, pointAmount);
 
             return pstmt.executeUpdate();
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public int withdrawMember(int memberCode) {
+
+        // 실제 DELETE가 아니라 기존 주문 참조를 유지하는 비식별 UPDATE 쿼리
+        String query = prop.getProperty("withdrawMember");
+
+        try (Connection con = getConnection();
+             PreparedStatement pstmt = con.prepareStatement(query)) {
+
+            pstmt.setInt(1, memberCode);
+
+            return pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(
+                    "회원 탈퇴 처리 중 오류가 발생했습니다.", e);
         }
     }
     }

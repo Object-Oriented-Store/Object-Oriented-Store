@@ -8,13 +8,16 @@ import java.util.Scanner;
 
 public class MemberView {
 
+    // 화면 입력을 Controller에 전달하고 처리 결과를 출력하는 객체
     private final MemberController memberController = new MemberController();
+    // false가 되면 로그인 회원용 메뉴 반복을 종료
     boolean isLoggedIn = true;
 
     private Scanner sc = new Scanner(System.in);
 
     private int inputNumber(String prompt) {
 
+        // 숫자가 아닌 값이 입력되면 메뉴를 종료하지 않고 다시 입력받음
         while(true){
 
             System.out.print(prompt);
@@ -77,8 +80,9 @@ public class MemberView {
             System.out.println("  1. 내 정보 조회");
             System.out.println("  2. 주문 내역 확인");
             System.out.println("  3. 회원정보 수정");
-            System.out.println("  4. 메인 화면으로");
-            System.out.println("  5. 프로그램 종료");
+            System.out.println("  4. 멤버십 탈퇴");
+            System.out.println("  5. 메인 화면으로");
+            System.out.println("  6. 프로그램 종료");
             System.out.println("======================================");
 
             int menu = inputNumber("메뉴 번호를 입력해주세요 : ");
@@ -97,16 +101,27 @@ public class MemberView {
                     break;
 
                 case 4:
+                    // 탈퇴 성공 여부를 받아 성공한 경우 로그인 회원용 화면을 종료
+                    boolean withdrawn = withdrawMemberMenu(loggedInMember);
+
+                    if(withdrawn){
+                        isLoggedIn = false;
+                        return;
+                    }
+
+                    break;
+
+                case 5:
                     System.out.println("메인 화면으로 이동합니다.");
                     return;
 
-                case 5:
+                case 6:
                     isLoggedIn = false;
                     System.out.println("프로그램을 종료합니다.");
                     return;
 
                 default:
-                    System.out.println("1~5 사이의 숫자를 입력해주세요.");
+                    System.out.println("1~6 사이의 숫자를 입력해주세요.");
             }
         }
     }
@@ -114,6 +129,7 @@ public class MemberView {
     // MyMembership - 내정보 조회
     public void selectMemberMenu(MemberDTO loggedInMember) {
 
+        // 로그인 시 저장한 회원 코드를 기준으로 DB의 최신 회원 정보를 다시 조회
         MemberDTO memberinfo = memberController.selectMember(loggedInMember);
         if (memberinfo == null){
             System.out.println("멤버십 정보를 조회할 수 없습니다.");
@@ -198,4 +214,37 @@ public class MemberView {
         System.out.println("멤버십 정보가 수정되었습니다.");
 
         }
+
+    public boolean withdrawMemberMenu(MemberDTO loggedInMember) {
+        System.out.println();
+        System.out.println("----------- 멤버십 탈퇴 -----------");
+        System.out.println("탈퇴 시 동일한 계정으로 이용할 수 없습니다.");
+        System.out.println("보유 포인트 및 총 누적 금액이 모두 소멸됩니다.");
+        System.out.println("탈퇴 하시겠습니까?");
+        System.out.println("1. 탈퇴");
+        System.out.println("2. 취소(뒤로가기)");
+
+        int number = inputNumber("메뉴 번호를 입력해주세요 : ");
+
+        if (number == 2) {
+            System.out.println("이전 메뉴로 돌아갑니다.");
+            return false;
+        }
+
+        if (number != 1) {
+            System.out.println("1 또는 2를 입력해주세요.");
+            return false;
+        }
+        // true는 탈퇴 완료, false는 취소 또는 탈퇴 실패를 의미
+        boolean withdrawn = memberController.withdrawMember(loggedInMember);
+
+        if (!withdrawn) {
+            System.out.println("멤버십 탈퇴 처리에 실패했습니다.");
+            return false;
+        }
+
+        System.out.println("멤버십 탈퇴가 완료되었습니다.");
+
+        return true;
+    }
     }

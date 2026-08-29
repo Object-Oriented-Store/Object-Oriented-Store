@@ -48,13 +48,6 @@
         WHERE member_code = ?
     </entry>
 
-    <!-- 내 계정 탈퇴(보류)-->
-    <entry key="deleteMember">
-        DELETE
-        FROM tbl_member
-        WHERE member_code = ?
-    </entry>
-
     <!-- 누적 금액 추가 -->
     <entry key="increaseTotalAmount">
         UPDATE tbl_member
@@ -103,6 +96,19 @@
         SET point_balance = point_balance - ?
         WHERE member_code = ?
         AND point_balance >= ?
+    </entry>
+
+    <!-- 계정 임시 탈퇴 -->
+    <entry key="withdrawMember">
+        UPDATE tbl_member
+        SET login_id = CONCAT('deleted_', member_code),
+        password = UUID(),
+        nickname = '탈퇴회원',
+        phone = 0,
+        point_balance = 0,
+        total_amount = 0,
+        grade_code = 1
+        WHERE member_code = ?
     </entry>
 
 </properties>

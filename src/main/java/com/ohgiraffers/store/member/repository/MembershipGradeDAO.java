@@ -14,6 +14,7 @@ import static com.ohgiraffers.store.common.config.DBConnection.getConnection;
 
 public class MembershipGradeDAO {
 
+    // 멤버십 등급명, 등급 갱신, 적립률 조회 SQL을 보관
     private final Properties prop = new Properties();
 
     public MembershipGradeDAO() {
@@ -28,6 +29,7 @@ public class MembershipGradeDAO {
         }
     }
 
+        // 등급 코드에 해당하는 고객 표시용 등급명을 조회
         public String selectGradeName(int gradeCode){
             String query = prop.getProperty("selectGradeName");
 
@@ -49,6 +51,7 @@ public class MembershipGradeDAO {
             }
         }
 
+        // 회원의 현재 누적 구매 금액을 기준으로 등급 코드를 갱신
         public int updateMembershipGrade(int memberCode){
             String query = prop.getProperty("updateMembershipGrade");
 
@@ -64,6 +67,7 @@ public class MembershipGradeDAO {
             }
         }
 
+        // 회원의 현재 등급에 설정된 포인트 적립률을 조회
         public int selectRewardRate(int memberCode){
             String query = prop.getProperty("selectRewardRate");
 
