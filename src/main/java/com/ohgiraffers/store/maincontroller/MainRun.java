@@ -17,6 +17,11 @@ public class MainRun {
         Controller cl =  new Controller(sc);
 
         String userName = cl.Start(); //시작화면 메소드 호출
-        cl.SelectCategory(userName);
+        if(userName != "관리자"){
+            cl.SelectCategory(userName);
+        }
+        else {
+
+        }
     }
 }

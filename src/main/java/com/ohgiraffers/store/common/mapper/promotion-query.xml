@@ -4,17 +4,28 @@
 
     <entry key="PrintCurrentlyPromotion">
         SELECT
+        promotion_code
         promotion_name,
-        promotion_column
+        promotion_column,
+        discount_value,
+        promotion_status
         FROM
-        tbl_promotion;
+        tbl_promotion
+        WHERE
+        promotion_status = 'Y';
     </entry>
 
     <entry key="RegisterPromotion">
         INSERT INTO
         tbl_promotion
+        (
+            promotion_name,
+            promotion_column,
+            discount_value,
+            promotion_status
+        )
         VALUES
-        (promotion_name, promotion_column, discount_value);
+        (?,?,?,?);
     </entry>
 
     <entry key="UpdatePromotion">
@@ -32,6 +43,15 @@
     <entry key="DeletePromotion">
         DELETE FROM tbl_promotion
         WHERE promotion_code = ?;
+    </entry>
+
+    <entry key="Confirmdelete">
+        SELECT
+            *
+        FROM
+            tbl_promotion
+        WHERE
+            promotion_code = ?
     </entry>
 
     <entry key="RegisterPromotionProduct">

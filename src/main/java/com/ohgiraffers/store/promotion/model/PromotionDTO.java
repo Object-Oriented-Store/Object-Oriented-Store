@@ -55,7 +55,7 @@ public class PromotionDTO {
     }
 
     public void setPromotionStatus(String promotionStatus) {
-        this.promotionStatus = "N";
+        this.promotionStatus = promotionStatus;
     }
 
     @Override

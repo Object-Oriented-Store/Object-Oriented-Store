@@ -3,12 +3,25 @@ package com.ohgiraffers.store.promotion.controller;
 import com.ohgiraffers.store.promotion.service.PromotionService;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Scanner;
 
 public class PromotionRun {
     Scanner sc;
     public PromotionRun(Scanner sc) {
         this.sc = sc;
+    }
+
+    Connection conn;
+
+    {
+        try {
+            conn = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/object_oriented_store", "oodbms", "oodbms");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void promotionMembership(){
@@ -24,8 +37,7 @@ public class PromotionRun {
             while(ctrl) {
                 switch (selectNum) {
                     case 1:
-                        Connection conn = null;
-                        service.printCurrentlyPromotion();
+                        service.printCurrentlyPromotion(conn);
                         ctrl = false;
                         break;
                     case 2:
@@ -60,7 +72,7 @@ public class PromotionRun {
                 switch (selectNum) {
                     case 1:
                         Connection conn=null;
-                        service.printCurrentlyPromotion();
+                        service.printCurrentlyPromotion(conn);
                         ctrl = false;
                         break;
                     case 2:

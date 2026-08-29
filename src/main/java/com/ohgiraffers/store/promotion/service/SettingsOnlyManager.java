@@ -13,6 +13,17 @@ import java.util.Scanner;
 public class SettingsOnlyManager {
     Scanner sc;
 
+    Connection conn;
+
+    {
+        try {
+            conn = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/object_oriented_store", "oodbms", "oodbms");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private final Properties prop = new Properties();
 
     public SettingsOnlyManager(Scanner sc) {
@@ -31,78 +42,75 @@ public class SettingsOnlyManager {
 
     }
 
+
+
     public void RegisterPromotion() {
+        PromotionDAO pa = new PromotionDAO();
         PromotionService promotionService = new PromotionService();
         PromotionDTO pd = new PromotionDTO();
         System.out.println("============행사등록============");
         System.out.print("행사명: ");
-        String promotionName = sc.nextLine();
+        // String promotionName = sc.nextLine();
+        pd.setPromotionName(sc.nextLine());
         System.out.print("행사내용: ");
-        String promotionColumn =  sc.nextLine();
+        // String promotionColumn =  sc.nextLine();
+        pd.setPromotionColumn(sc.nextLine());
         System.out.print("할인율: ");
-        int discount = Integer.parseInt(sc.nextLine());
+        // int discount = Integer.parseInt(sc.nextLine());
+        pd.setDiscountValue(sc.nextInt());
         pd.setPromotionStatus("Y");
-        String query = prop.getProperty("RegisterPromotion");
-        try (Connection conn = DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/object_oriented_store", "oodbms", "oodbms");
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
 
-            pstmt.setString(1, promotionName);
-            pstmt.setString(2, promotionColumn);
-            pstmt.setInt(3, discount);
-            ResultSet rs = pstmt.executeQuery();
+        pa.registerPromotion();
 
-            System.out.println("==========새로 등록한 행사==========");
-            System.out.println("행사명: " + rs.getString("promotion_name"));
-            System.out.println("행사내용:  " + rs.getString("promotion_column"));
-            System.out.println("할인율: " + rs.getString("discount_value"));
-            System.out.println("====================================");
-
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        System.out.println("==========새로 등록한 행사==========");
+        System.out.println("행사명: " + pd.getPromotionName());
+        System.out.println("행사내용:  " + pd.getPromotionColumn());
+        System.out.println("할인율: " + pd.getDiscountValue() + "%");
+        System.out.println("행사의 상태: " + pd.getPromotionStatus());
+        System.out.println("====================================");
     }
 
-        public void RegisterPromotionProduct(){
+        public void RegisterPromotionProduct() throws SQLException {
         PromotionService promotionService = new PromotionService();
-        promotionService.printCurrentlyPromotion();
+        promotionService.printCurrentlyPromotion(conn);
 
         System.out.println("상품을 등록할 행사코드을 입력하세요: ");
         int promotionCode = sc.nextInt();
         System.out.println("행사에 등록할 상품코드를 입력하세요");
         int promotionProductCode = sc.nextInt();
 
-        boolean isRegistered =
-                promotionService.registerPromotionProduct(promotionCode, promotionProductCode);
-
-        if (isRegistered) {
-            System.out.println("행사 상품이 등록되었습니다.");
-        } else {
-            System.out.println("등록에 실패했습니다. 행사 코드와 상품 코드를 확인하세요.");
-        }
 
     }
 
-    public void UpdatePromotion(){
+    public void UpdatePromotion() throws SQLException {
         PromotionDTO pd = new PromotionDTO();
         PromotionService ps = new PromotionService();
         PromotionService promotionService = new PromotionService();
         PromotionDAO promotionDAO = new PromotionDAO();
 
-        Connection conn = null;
-
-        System.out.print("기존의 행사 목록을 조회하시겠습니까?(1-Yes, 0-No)");
+        System.out.print("기존의 행사 목록을 조회하시겠습니까?");
+        System.out.print("(1-Yes, 0-No): ");
         int WannaRead = sc.nextInt();
         if (WannaRead == 1) {
             try {
-                promotionDAO.printCurrentlyPromotion(conn);
+                ps.printCurrentlyPromotion(conn);
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
         }
+        System.out.println("================================");
         System.out.print("수정할 행사의 행사코드를 입력하세요: ");
         int WannaCode =  sc.nextInt();
+
+        ResultSet rs = ps.updatePromotion(WannaCode);
+        while (rs.next()) {
+            if (rs.getString("promotion_status") == "Y") {
+                System.out.println("수정 후 행사명: " + rs.getString("promotion_name"));
+                System.out.println("수정 후 행사내용: " + rs.getString("promotion_column"));
+                System.out.println("수정 후 할인율: " + rs.getString("discount_value") + "%");
+                System.out.println();
+            }
+        }
 
     }
 
@@ -115,21 +123,21 @@ public class SettingsOnlyManager {
         int WannaRead = sc.nextInt();
         if (WannaRead == 1) {
             try {
-                Connection conn = null;
-                promotionDAO.printCurrentlyPromotion(conn);
+                ps.printCurrentlyPromotion(conn);
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
-        }
-        System.out.print("삭제할 행사의 행사코드를 입력하세요: ");
-        int wannaCode =  sc.nextInt();
 
-        boolean isDeleted = ps.deletePromotion(wannaCode);
-
-        if (isDeleted) {
-            System.out.println("행사가 삭제되었습니다.");
-        } else {
-            System.out.println("해당 행사코드가 없거나 삭제에 실패했습니다.");
+        } else if(WannaRead != 0){
+            System.out.println("잘못입력하셨습니다. 다시 메뉴가 시작됩니다. ");
+            DeletePromotion();
         }
+        System.out.println("================================");
+        System.out.println("삭제할 행사의 행사코드를 입력하세요: ");
+        int delCode = sc.nextInt();
+        ps.deletePromotion(conn,delCode);
+
+        System.out.println(delCode + "번 행사의 데이터가 삭제되었습니다. ");
+
     }
 }
