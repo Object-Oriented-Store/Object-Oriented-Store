@@ -29,16 +29,20 @@ public class PromotionService {
 
     public void printCurrentlyPromotion(Connection conn)  {
 
-        String sql = prop.getProperty("PrintCurrentlyPromotion");
+        String sql = "SELECT promotion_code, promotion_name, promotion_column, discount_value, promotion_status FROM tbl_promotion ";
+        if (sql == null || sql.isBlank()) {
+            throw new IllegalStateException(
+                    "properties에서 PrintCurrentlyPromotion SQL을 찾을 수 없습니다.");}
         System.out.println("===================================");
 
-        try (conn; PreparedStatement pstmt = conn.prepareStatement(sql);
+        try (PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
             while (rs.next()) {
                 System.out.println("행사코드: " + rs.getInt("promotion_code"));
                 System.out.println("행사명: " + rs.getString("promotion_name"));
                 System.out.println("행사내용: " + rs.getString("promotion_column"));
                 System.out.println("할인율: " + rs.getInt("discount_value") + "%");
+                System.out.println("행사 진행상태: " +  rs.getInt("promotion_status"));
                 System.out.println();
             }
         } catch (SQLException e) {
@@ -57,13 +61,6 @@ public class PromotionService {
         pd.setDiscountValue(sc.nextInt());
 
         ResultSet rs = promotionDAO.updatePromotion(conn, wc);
-
-        System.out.println("==============수정된 행사 내용==============");
-        System.out.println("행사명: " + pd.getPromotionName());
-        System.out.println("행사내용: " + pd.getPromotionColumn());
-        System.out.println("할인율: " + pd.getDiscountValue());
-        System.out.println("행사 진행상태: " + pd.getPromotionStatus());
-        System.out.println();
         return rs;
     }
 

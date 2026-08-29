@@ -100,12 +100,10 @@ public class SettingsOnlyManager {
 
         ResultSet rs = ps.updatePromotion(WannaCode);
         while (rs.next()) {
-            if (rs.getString("promotion_status") == "Y") {
-                System.out.println("수정 후 행사명: " + rs.getString("promotion_name"));
-                System.out.println("수정 후 행사내용: " + rs.getString("promotion_column"));
-                System.out.println("수정 후 할인율: " + rs.getString("discount_value") + "%");
-                System.out.println();
-            }
+            System.out.println("수정 후 행사명: " + rs.getString("promotion_name"));
+            System.out.println("수정 후 행사내용: " + rs.getString("promotion_column"));
+            System.out.println("수정 후 할인율: " + rs.getString("discount_value") + "%");
+            System.out.println();
         }
 
     }
