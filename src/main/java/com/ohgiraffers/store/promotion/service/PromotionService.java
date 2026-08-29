@@ -30,9 +30,6 @@ public class PromotionService {
     public void printCurrentlyPromotion(Connection conn)  {
 
         String sql = "SELECT promotion_code, promotion_name, promotion_column, discount_value, promotion_status FROM tbl_promotion ";
-        if (sql == null || sql.isBlank()) {
-            throw new IllegalStateException(
-                    "properties에서 PrintCurrentlyPromotion SQL을 찾을 수 없습니다.");}
         System.out.println("===================================");
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -42,7 +39,7 @@ public class PromotionService {
                 System.out.println("행사명: " + rs.getString("promotion_name"));
                 System.out.println("행사내용: " + rs.getString("promotion_column"));
                 System.out.println("할인율: " + rs.getInt("discount_value") + "%");
-                System.out.println("행사 진행상태: " +  rs.getInt("promotion_status"));
+                System.out.println("행사 진행상태: " +  rs.getString("promotion_status"));
                 System.out.println();
             }
         } catch (SQLException e) {
@@ -51,17 +48,24 @@ public class PromotionService {
 
     }
 
-    public ResultSet updatePromotion(int wc){
-        System.out.println(wc + "번 행사 수정");
+    public void updatePromotion(int wc){
+        System.out.println("[" + wc + "번 행사 수정]");
         System.out.print("수정 행사명: ");
         pd.setPromotionName(sc.nextLine());
         System.out.print("수정 행사내용: ");
         pd.setPromotionColumn(sc.nextLine());
         System.out.print("수정 할인율: ");
         pd.setDiscountValue(sc.nextInt());
+        System.out.println("수정할 행사의 진행상태: ");
+        pd.setPromotionStatus(sc.nextLine());
 
-        ResultSet rs = promotionDAO.updatePromotion(conn, wc);
-        return rs;
+        promotionDAO.updatePromotion(conn, wc);
+
+        System.out.println(pd.getPromotionName());
+        System.out.println(pd.getPromotionColumn());
+        System.out.println(pd.getDiscountValue());
+        System.out.println(pd.getPromotionStatus());
+
     }
 
     public void deletePromotion(Connection conn, int wc){

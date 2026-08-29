@@ -21,26 +21,26 @@ public class PromotionDAO {
         }
     }
 
-    public ResultSet updatePromotion(Connection conn, int wc){
+    public void updatePromotion(Connection conn, int wc) {
         String sql = prop.getProperty("UpdatePromotion");
         System.out.println("===================================");
-        PreparedStatement pstmt = null;
-        try {
-            pstmt = conn.prepareStatement(sql);
+
+        // try-with-resources로 PreparedStatement 자동 해제
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            // 1. 쿼리 실행 전에 위치 홀더(?)에 값 대입
+            pstmt.setString(1, pd.getPromotionName());
+            pstmt.setString(2, pd.getPromotionColumn());
+            pstmt.setInt(3, pd.getDiscountValue());
+            pstmt.setString(4, pd.getPromotionStatus());
+            pstmt.setInt(5, wc);
+
+            // 2. UPDATE, INSERT, DELETE 문은 executeUpdate() 호출 (반환값: 수정된 행 수)
+            pstmt.executeUpdate();
+
+
         } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        {
-            try (ResultSet rs = pstmt.executeQuery()) {
-                pstmt.setString(1, pd.getPromotionName());
-                pstmt.setString(2, pd.getPromotionColumn());
-                pstmt.setInt(3, pd.getDiscountValue());
-                pstmt.setString(4, pd.getPromotionStatus());
-                pstmt.setInt(5, pd.getPromotionCode());
-                return rs;
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+            throw new RuntimeException("프로모션 수정 중 에러 발생", e);
         }
     }
 

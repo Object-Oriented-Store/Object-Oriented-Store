@@ -83,10 +83,7 @@ public class SettingsOnlyManager {
     }
 
     public void UpdatePromotion() throws SQLException {
-        PromotionDTO pd = new PromotionDTO();
         PromotionService ps = new PromotionService();
-        PromotionService promotionService = new PromotionService();
-        PromotionDAO promotionDAO = new PromotionDAO();
 
         System.out.print("기존의 행사 목록을 조회하시겠습니까?");
         System.out.print("(1-Yes, 이외의 키-No): ");
@@ -98,13 +95,7 @@ public class SettingsOnlyManager {
         System.out.print("수정할 행사의 행사코드를 입력하세요: ");
         int WannaCode =  sc.nextInt();
 
-        ResultSet rs = ps.updatePromotion(WannaCode);
-        while (rs.next()) {
-            System.out.println("수정 후 행사명: " + rs.getString("promotion_name"));
-            System.out.println("수정 후 행사내용: " + rs.getString("promotion_column"));
-            System.out.println("수정 후 할인율: " + rs.getString("discount_value") + "%");
-            System.out.println();
-        }
+        ps.updatePromotion(WannaCode);
 
     }
 

@@ -30,14 +30,14 @@
 
     <entry key="UpdatePromotion">
         UPDATE
-        tbl_promotion
+            tbl_promotion
         SET
-        promotion_name = ?,
-        promotion_column = ?,
-        discount_value = ?,
-        promotion_status = ?
+            promotion_name = ?,
+            promotion_column = ?,
+            discount_value = ?,
+            promotion_status = ?
         WHERE
-        promotion_code = ?;
+            promotion_code = ?;
     </entry>
 
     <entry key="DeletePromotion">
