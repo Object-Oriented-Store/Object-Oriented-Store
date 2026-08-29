@@ -73,6 +73,40 @@ public class MemberDAO {
         }
     }
 
+    // 회원 가입 후 즉시 로그인을 위한 SQL
+    public MemberDTO selectMemberByLoginId(String loginId) {
+
+        String query = prop.getProperty("selectMemberByLoginId");
+
+        try (Connection con = getConnection();
+             PreparedStatement pstmt = con.prepareStatement(query)) {
+
+            pstmt.setString(1, loginId);
+
+            try (ResultSet rset = pstmt.executeQuery()) {
+
+                if (rset.next()) {
+                    return new MemberDTO(
+                            rset.getInt("member_code"),
+                            rset.getInt("grade_code"),
+                            rset.getString("login_id"),
+                            rset.getString("password"),
+                            rset.getString("nickname"),
+                            rset.getInt("phone"),
+                            rset.getInt("point_balance"),
+                            rset.getInt("total_amount")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(
+                    "가입 회원 조회 중 오류가 발생했습니다.", e
+            );
+        }
+        return null;
+    }
+
+
     // 정보 조회
     public MemberDTO selectMember(MemberDTO member) {
         String query = prop.getProperty("selectMemberInfo");
@@ -101,8 +135,6 @@ public class MemberDAO {
         return null;
     }
 
-
-
     // 정보 변경
     public int modifyMember(MemberDTO member){
         String query = prop.getProperty("modifyMemberInfo");
@@ -119,6 +151,38 @@ public class MemberDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException("멤버십 정보 변경 중 오류가 발생되었습니다.", e);
+        }
+    }
+
+    public int plusTotalAmount(int memberCode, int finalAmount) {
+        String query = prop.getProperty("increaseTotalAmount");
+
+        try (Connection con = getConnection();
+             PreparedStatement pstmt = con.prepareStatement(query)) {
+
+            pstmt.setInt(1, finalAmount);
+            pstmt.setInt(2, memberCode);
+
+        return pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("누적 금액 증가 오류가 발생되었습니다.", e);
+        }
+    }
+
+    public int minusTotalAmount(int memberCode, int previousAmount) {
+        String query = prop.getProperty("decreaseTotalAmount");
+
+        try (Connection con = getConnection();
+             PreparedStatement pstmt = con.prepareStatement(query)) {
+
+            pstmt.setInt(1, previousAmount);
+            pstmt.setInt(2, memberCode);
+
+            return pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("누적 금액 차감 오류가 발생되었습니다.", e);
         }
     }
     }

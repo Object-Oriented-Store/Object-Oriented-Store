@@ -39,7 +39,7 @@ public class MembershipGradeDAO {
 
                 try (ResultSet rset = pstmt.executeQuery()) {
                     if (rset.next()) {
-                        return rset.getString("gradeName");
+                        return rset.getString("grade_name");
                     }
                 }
                 return null;

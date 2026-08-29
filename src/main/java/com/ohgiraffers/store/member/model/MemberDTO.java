@@ -20,8 +20,9 @@ public class MemberDTO {
         this.password = password;
     }
 
-    public MemberDTO(int memberCode, String nickname) {
+    public MemberDTO(int memberCode, String loginId, String nickname) {
         this.memberCode = memberCode;
+        this.loginId = loginId;
         this.nickname = nickname;
     }
 
@@ -118,6 +119,7 @@ public class MemberDTO {
                 ", totalAmount=" + totalAmount +
                 '}';
     }
+
 }
 
 

@@ -2,52 +2,16 @@ package com.ohgiraffers.store.member.view;
 
 import com.ohgiraffers.store.member.controller.MemberController;
 import com.ohgiraffers.store.member.model.MemberDTO;
+import com.ohgiraffers.store.member.model.MembershipGradeDTO;
 
 import java.util.Scanner;
 
 public class MemberView {
 
     private final MemberController memberController = new MemberController();
-    private final MemberDTO memberDTO = new MemberDTO();
-
     boolean isLoggedIn = true;
 
     private Scanner sc = new Scanner(System.in);
-
-//    public void displayMainMenu(){
-//
-//        boolean isRunning = true;
-//
-//        while (isRunning){
-//
-//            System.out.println();
-//            System.out.println("==========================================");
-//            System.out.println("          OBJECT-ORIENTED STORE");
-//            System.out.println("        24시간 온라인 편의점입니다.");
-//            System.out.println("==========================================");
-//            System.out.println("  1. 로그인");
-//            System.out.println("  2. 회원가입");
-//            System.out.println("  3. 프로그램 종료");
-//            System.out.println("------------------------------------------");
-//
-//            int num = inputNumber("메뉴 번호를 입력해주세요 : ");
-//
-//            switch (num){
-//                case 1 :
-//                    loginMember();
-//                    break;
-//                case 2 :
-//                    joinMember();
-//                    break;
-//                case 3 :
-//                    System.out.println("프로그램을 종료합니다.");
-//                    isRunning = false;
-//                    break;
-//                default:
-//                    System.out.println("1~3 사이의 숫자 중 하나만 입력해주세요.");
-//            }
-//        }
-//    }
 
     private int inputNumber(String prompt) {
 
@@ -64,9 +28,9 @@ public class MemberView {
         }
     }
 
-    public void joinMember(){
+    // 회원 가입 화면
+    public MemberDTO joinMember(){
 
-        while(true){
         System.out.println();
         System.out.println(" -------------- 회원 가입 -------------");
 
@@ -84,21 +48,23 @@ public class MemberView {
 
         if(!phone.matches("[0-9]{8}")){
             System.out.println("휴대폰 번호는 숫자 8자리로 입력해주세요.");
-            return;
+            return null;
         }
 
         int phonenum =  Integer.parseInt(phone);
 
-        boolean joined = memberController.joinMember(loginId, password, nickname, phonenum);
+        MemberDTO joinedMember = memberController.joinMember(loginId, password, nickname, phonenum);
 
-        if(joined) {
-            System.out.println("멤버십에 가입되었습니다.");
-            return;
+        if(joinedMember == null) {
+            System.out.println("멤버십 가입이 되지 않았습니다.");
+            System.out.println("메인 화면으로 이동합니다.");
+            return null;
         }
-            System.out.println("멤버십 가입에 실패하였습니다.");
+        System.out.println("멤버십 가입에 가입되었습니다.");
+        return joinedMember;
     }
-}
 
+    //My Membership 선택 시 보여지는 화면
     public void MyMembership(MemberDTO loggedInMember) {
 
         if (loggedInMember == null || loggedInMember.getMemberCode() <= 0){
@@ -127,7 +93,7 @@ public class MemberView {
                     break;
 
                 case 3:
-                    modifyMemberMenu();
+                    modifyMemberMenu(loggedInMember);
                     break;
 
                 case 4:
@@ -145,6 +111,7 @@ public class MemberView {
         }
     }
 
+    // MyMembership - 내정보 조회
     public void selectMemberMenu(MemberDTO loggedInMember) {
 
         MemberDTO memberinfo = memberController.selectMember(loggedInMember);
@@ -153,18 +120,20 @@ public class MemberView {
             return;
         }
 
+        String gradeName = memberController.selectGradeName(memberinfo);
+
         while (isLoggedIn) {
             System.out.println();
             System.out.println("========== My 멤버십 상세 ==========");
+            System.out.println(" 멤버십 등급 : " +  gradeName);
             System.out.println(" 아이디 : " +  memberinfo.getLoginId());
             System.out.println(" 비밀번호 : ********");
             System.out.println(" 닉네임 : " + memberinfo.getNickname());
-            System.out.println(" 휴대폰 번호 : " + memberinfo.getPhone());
+            System.out.printf(" 휴대폰 번호 : %08d%n", memberinfo.getPhone());
             System.out.println(" 보유 포인트 : " + memberinfo.getPointBalance());
             System.out.println(" 총 구매 누적 금액 : " + memberinfo.getTotalAmount());
             System.out.println("----------------------------------------");
 
-            System.out.println();
             System.out.println("  1. 회원정보 수정");
             System.out.println("  2. 메인 화면으로");
             System.out.println("  3. 프로그램 종료");
@@ -175,7 +144,7 @@ public class MemberView {
 
             switch (menu) {
                 case 1:
-                    modifyMemberMenu();
+                    modifyMemberMenu(loggedInMember);
                     break;
                 case 2:
                     System.out.println("메인 화면으로 이동합니다.");
@@ -192,30 +161,20 @@ public class MemberView {
         }
     }
 
-    public void modifyMemberMenu() {
+    // 멤버십 정보 수정
+    public void modifyMemberMenu(MemberDTO loggedInMember) {
 
         System.out.println();
         System.out.println("----------- 회원정보 수정 -----------");
-        System.out.println("아이디 : " + memberDTO.getLoginId());
         System.out.println("※ 아이디는 수정할 수 없습니다.");
 
-        System.out.println("새 비밀번호 : ");
+        System.out.print("새 비밀번호 : ");
         String password = sc.nextLine();
 
-        if(password.isEmpty()){
-            System.out.println("비밀번호를 입력해주세요.");
-            return;
-        }
-
-        System.out.println("새 닉네임 : ");
+        System.out.print("새 닉네임 : ");
         String nickname = sc.nextLine();
 
-        if(nickname.isBlank()){
-            System.out.println("닉네임을 입력해주세요.");
-            return;
-        }
-
-        System.out.println("새 휴대폰 번호(010 제외 8자리) : ");
+        System.out.print("새 휴대폰 번호(010 제외 8자리) : ");
         String phoneInput = sc.nextLine();
 
         if(!phoneInput.matches("[0-9]{8}")){
@@ -225,7 +184,7 @@ public class MemberView {
 
         int phone = Integer.parseInt(phoneInput);
 
-        MemberDTO modifiedMember = new MemberDTO(memberDTO.getMemberCode(),
+        MemberDTO modifiedMember = new MemberDTO(loggedInMember.getMemberCode(),
                 password, nickname, phone);
 
 
@@ -235,8 +194,6 @@ public class MemberView {
             System.out.println("멤버십 정보 수정에 실패했습니다.");
             return;
         }
-
-//        loggedInMember = memberController.selectMember(loggedInMember);
 
         System.out.println("멤버십 정보가 수정되었습니다.");
 

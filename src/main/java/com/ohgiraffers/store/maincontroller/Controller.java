@@ -48,15 +48,24 @@ public class Controller {
             System.out.println("어서오세요, 객체지향 편의점 입니다~!");
             System.out.println("1. 로그인");
             System.out.println("2. 회원가입");
+            System.out.println("3. 프로그램 종료");
             System.out.print("메뉴를 선택해 주세요: ");
             int choice1 = sc.nextInt();
             switch (choice1) {
                 case 1:
                     loggedInMember = mb.logIn();
-                    sw = false;
-                    return loggedInMember;
+                    if (loggedInMember != null){
+                        return loggedInMember;
+                    }
+                    break;
                 case 2:
-                    memberView.joinMember();
+                    loggedInMember = memberView.joinMember();
+
+                    if (loggedInMember != null){
+                        return loggedInMember;
+                    }
+                    break;
+                case 3:
                     sw = false;
                     break;
                 default:
@@ -150,7 +159,7 @@ public class Controller {
 
     // 관리자 메인 화면
     public void startManager()  {
-        PromotionDAO  pdao = new PromotionDAO();
+        PromotionDAO pdao = new PromotionDAO();
         PromotionService service = new PromotionService();
         SettingsOnlyManager som = new SettingsOnlyManager(sc);
         System.out.println("==============객체지향점==============");

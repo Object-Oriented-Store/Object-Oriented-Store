@@ -10,40 +10,42 @@ public class MemberService {
     private final MembershipGradeDAO memberGradeDAO = new MembershipGradeDAO();
     private final MemberDTO memberDTO = new MemberDTO();
 
-    public boolean joinMember(MemberDTO member) {
+    // 회원 가입 검증
+    public MemberDTO joinMember(MemberDTO member) {
 
         if (member == null) {
-            return false;
+            return null;
         }
-
         if (member.getLoginId() == null || member.getLoginId().isBlank() || member.getLoginId().length() > 25) {
             System.out.println("아이디를 입력해주세요.");
-            return false;
+            return null;
         }
-
         if (member.getPassword() == null || member.getPassword().isBlank()) {
             System.out.println("비밀번호를 입력해주세요.");
-            return false;
+            return null;
         }
-
         if (member.getNickname() == null || member.getNickname().isBlank() || member.getNickname().length() > 25) {
             System.out.println("닉네임을 입력해주세요.");
-            return false;
+            return null;
+        }
+        if (member.getPhone() < 0 || member.getPhone() > 99_999_999) {
+            System.out.println(
+                    "휴대폰 번호는 숫자 8자리로 입력해주세요.");
+            return null;
         }
 
-        String phone = String.valueOf(member.getPhone());
-        if (phone == null || phone.isBlank() || phone.length() != 8) {
-            System.out.println("휴대폰번호를 입력해주세요.");
-            return false;
-        }
         // 아이디 중복 검증으로  false일 시 회원가입 진행
         if (memberDAO.isLoginIdDuplicate(member.getLoginId())) {
             System.out.println("이미 사용중인 아이디입니다.");
-            return false;
+            return null;
         }
 
         int result = memberDAO.insertMember(member);
-        return result > 0;
+
+        if (result <= 0){
+            return null;
+        }
+        return memberDAO.selectMemberByLoginId(member.getLoginId());
     }
 
     public MemberDTO selectMember(MemberDTO loggedInMember){
@@ -82,16 +84,51 @@ public class MemberService {
             return false;
         }
 
-        String phone = String.valueOf(member.getPhone());
-
-        if (!phone.matches("[0-9]{8}")) {
+        if (member.getPhone() < 0 || member.getPhone() > 99_999_999) {
             System.out.println(
-                    "휴대폰 번호는 숫자 8자리로 입력해주세요."
-            );
+                    "휴대폰 번호는 숫자 8자리로 입력해주세요.");
             return false;
         }
 
         int result = memberDAO.modifyMember(member);
+
+        return result > 0;
+    }
+
+    // 내정보 등급명 표기
+    public String selectGradeName(MemberDTO member) {
+
+        if (member == null || member.getGradeCode() <= 0) {
+            return null;
+        }
+
+        return memberGradeDAO.selectGradeName(member.getGradeCode());
+    }
+
+    // 누적 구매 금액 추가
+    public boolean plusTotalAmount(int memberCode, int finalAmount){
+
+        if (memberCode <= 0){
+            return false;
+        }
+        if (finalAmount <= 0){
+            return false;
+        }
+        int result = memberDAO.plusTotalAmount(memberCode, finalAmount);
+
+        return result > 0;
+    }
+
+    // 누적 구매 금액 차감
+    public boolean minusTotalAmount(int memberCode, int previousAmount){
+
+        if (memberCode <= 0){
+            return false;
+        }
+        if (previousAmount <= 0){
+            return false;
+        }
+        int result = memberDAO.minusTotalAmount(memberCode, previousAmount);
 
         return result > 0;
     }

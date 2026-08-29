@@ -8,7 +8,7 @@ public class MemberController {
 
     private final MemberService memberService = new MemberService();
 
-    public boolean joinMember(String loginId, String password, String nickname, int phone) {
+    public MemberDTO joinMember(String loginId, String password, String nickname, int phone) {
         MemberDTO member = new MemberDTO(loginId, password, nickname, phone);
 
         return memberService.joinMember(member);
@@ -21,6 +21,17 @@ public class MemberController {
         return memberService.modifyMember(member);
     }
 
+    public String selectGradeName(MemberDTO member){
+        return memberService.selectGradeName(member);
+    }
+
+    public boolean plusTotalAmount(int memberCode, int finalAmount){
+        return memberService.plusTotalAmount(memberCode,finalAmount);
+    }
+
+    public boolean minusTotalAmount(int memberCode, int previousTotalAmount){
+        return memberService.minusTotalAmount(memberCode,previousTotalAmount);
+    }
 }
 
 

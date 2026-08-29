@@ -23,7 +23,7 @@ public class Membership<SqlSession> {
         String loginId = sc.nextLine();
         System.out.print("비밀번호 입력: ");
         String password = sc.nextLine();
-        String sql = "SELECT member_code, nickname FROM tbl_member WHERE login_id=? AND password=?";
+        String sql = "SELECT member_code, login_id, nickname FROM tbl_member WHERE login_id=? AND password=?";
         MemberDTO loggedInMember = null;
         try (Connection conn = DriverManager.getConnection(
                 "jdbc:mysql://localhost:3306/object_oriented_store", "oodbms", "oodbms");
@@ -37,7 +37,8 @@ public class Membership<SqlSession> {
             if (rs.next()) {
 
                 loggedInMember = new MemberDTO(
-                        rs.getInt("member_Code"),
+                        rs.getInt("member_code"),
+                        rs.getString("login_id"),
                         rs.getString("nickname")
                 );
 

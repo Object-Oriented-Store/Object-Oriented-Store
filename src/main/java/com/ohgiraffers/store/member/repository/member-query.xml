@@ -17,6 +17,14 @@
     </entry>
 
     <!-- 내정보 조회 -->
+    <entry key="selectMemberByLoginId">
+        SELECT member_code, grade_code, login_id, password, nickname,
+        phone, point_balance, total_amount
+        FROM tbl_member
+        WHERE login_id = ?
+    </entry>
+
+    <!-- 내정보 조회 -->
     <entry key="selectMemberInfo">
         SELECT member_code, grade_code, login_id, password, nickname,
         phone, point_balance, total_amount
@@ -24,7 +32,14 @@
         WHERE member_code = ?
     </entry>
 
-    <!-- 내정보 수정-->
+    <!-- 내정보 조회(등급명 추가) -->
+    <entry key="selectGradeName">
+        SELECT grade_name
+        FROM tbl_membership_grade
+        WHERE grade_code = ?
+    </entry>
+
+    <!-- 내정보 수정 -->
     <entry key="modifyMemberInfo">
         UPDATE tbl_member
         SET password = ?,
@@ -40,10 +55,39 @@
         WHERE member_code = ?
     </entry>
 
-    <entry key="selectGradeName">
-        SELECT grade_name
-        FROM tbl_membership_grade
-        WHERE grade_code = ?
+    <!-- 누적 금액 추가 -->
+    <entry key="increaseTotalAmount">
+        UPDATE tbl_member
+        SET total_amount = total_amount + ?
+        WHERE member_code = ?
+    </entry>
+
+    <!-- 누적 금액 차감(결제 취소) -->
+    <entry key="decreaseTotalAmount">
+        UPDATE tbl_member
+        SET total_amount = GREATEST(total_amount - ?, 0)
+        WHERE member_code = ?
+    </entry>
+
+    <!-- Membership 등급 업데이트 -->
+    <entry key="updateMembershipGrade">
+        UPDATE tbl_member
+        SET grade_code =
+        CASE
+        WHEN total_amount >= 200000 THEN 3
+        WHEN total_amount >= 50000 THEN 2
+        ELSE 1
+        END
+        WHERE member_code = ?
+    </entry>
+
+    <!-- 적립률 조회 -->
+    <entry key="selectRewardRate">
+        SELECT mg.reward_rate
+        FROM tbl_member m
+        JOIN tbl_membership_grade mg
+        ON m.grade_code = mg.grade_code
+        WHERE m.member_code = ?
     </entry>
 
 </properties>
