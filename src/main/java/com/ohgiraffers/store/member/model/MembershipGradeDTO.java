@@ -17,6 +17,7 @@ public class MembershipGradeDTO {
         this.rewardRate = rewardRate;
     }
 
+
     // 수정이 필요하지 않기에 getter만 생성
     public int getGradeCode() {
         return gradeCode;

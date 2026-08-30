@@ -15,41 +15,52 @@ public class Membership<SqlSession> {
 
     public Membership() {}
 
+    public MemberDTO logIn() {
 
-    public String logIn() {
-        System.out.println("==============로그인==============");
         sc.nextLine();
-        System.out.print("아이디 입력: ");
-        String loginId = sc.nextLine();
-        System.out.print("비밀번호 입력: ");
-        String password = sc.nextLine();
-        String sql = "SELECT nickname FROM tbl_member WHERE login_id=? AND password=?";
-        String returnname = "";
-        try (Connection conn = DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/object_oriented_store", "oodbms", "oodbms");
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, loginId);
-            pstmt.setString(2, password);
+        while (true) {
+            System.out.println("==============로그인==============");
 
-            ResultSet rs = pstmt.executeQuery();
+            System.out.print("아이디 입력: ");
+            String loginId = sc.nextLine();
 
-            if (rs.next()) {
-                System.out.println("[로그인 성공]");
-                System.out.println();
-                returnname = rs.getString("nickname");
-                if(Objects.equals(returnname, "관리자")){
-                    cl.startManager();
+            System.out.print("비밀번호 입력: ");
+            String password = sc.nextLine();
+            String sql = "SELECT member_code, login_id, nickname FROM tbl_member WHERE login_id=? AND password=?";
+            MemberDTO loggedInMember = null;
+
+            try (Connection conn = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/object_oriented_store", "oodbms", "oodbms");
+                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+                pstmt.setString(1, loginId);
+                pstmt.setString(2, password);
+
+                try (ResultSet rs = pstmt.executeQuery()) {
+
+                    if (rs.next()) {
+
+                        loggedInMember = new MemberDTO(
+                                rs.getInt("member_code"),
+                                rs.getString("login_id"),
+                                rs.getString("nickname")
+                        );
+
+                        System.out.println("[로그인 성공]");
+                        System.out.println();
+                        if (Objects.equals(loggedInMember.getLoginId(), "admin")) {
+                            cl.startManager();
+                        }
+
+                    } else {
+                        System.out.println("아이디 또는 비밀번호가 틀렸습니다.");
+                    }
                 }
-
-            } else {
-                System.out.println("아이디 또는 비밀번호가 틀렸습니다.");
-                logIn();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            return loggedInMember;
         }
-        return returnname;
     }
-
 }

@@ -14,6 +14,7 @@ import static com.ohgiraffers.store.common.config.DBConnection.getConnection;
 
 public class MembershipGradeDAO {
 
+    // 멤버십 등급명, 등급 갱신, 적립률 조회 SQL을 보관
     private final Properties prop = new Properties();
 
     public MembershipGradeDAO() {
@@ -28,6 +29,7 @@ public class MembershipGradeDAO {
         }
     }
 
+        // 등급 코드에 해당하는 고객 표시용 등급명을 조회
         public String selectGradeName(int gradeCode){
             String query = prop.getProperty("selectGradeName");
 
@@ -39,13 +41,51 @@ public class MembershipGradeDAO {
 
                 try (ResultSet rset = pstmt.executeQuery()) {
                     if (rset.next()) {
-                        return rset.getString("gradeName");
+                        return rset.getString("grade_name");
                     }
                 }
                 return null;
 
             } catch (SQLException e) {
                 throw new RuntimeException("멤버십 등급명 조회 중 오류가 발생했습니다.", e);
+            }
+        }
+
+        // 회원의 현재 누적 구매 금액을 기준으로 등급 코드를 갱신
+        public int updateMembershipGrade(int memberCode){
+            String query = prop.getProperty("updateMembershipGrade");
+
+            try (Connection con = getConnection();
+                PreparedStatement pstmt = con.prepareStatement(query)){
+
+                pstmt.setInt(1, memberCode);
+
+                return pstmt.executeUpdate();
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        // 회원의 현재 등급에 설정된 포인트 적립률을 조회
+        public int selectRewardRate(int memberCode){
+            String query = prop.getProperty("selectRewardRate");
+
+            try (Connection con = getConnection();
+                PreparedStatement pstmt = con.prepareStatement(query)){
+
+                pstmt.setInt(1,memberCode);
+
+                try(ResultSet rset = pstmt.executeQuery()){
+
+                    if (rset.next()){
+                        return rset.getInt("reward_rate");
+                    }
+                }
+                return 0;
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
         }
     }

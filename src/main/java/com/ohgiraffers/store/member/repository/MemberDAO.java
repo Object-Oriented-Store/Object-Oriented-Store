@@ -15,9 +15,11 @@ import static com.ohgiraffers.store.common.config.DBConnection.getConnection;
 
 public class MemberDAO {
 
+    // XML에 저장된 SQL을 키값으로 조회하기 위한 객체
     private final Properties prop = new Properties();
 
     public MemberDAO(){
+        // DAO 생성 시 회원 관련 SQL이 들어 있는 XML 파일을 한 번 불러옴
         try (FileInputStream fis = new FileInputStream("src/main/java/com/ohgiraffers/store/member/repository/member-query.xml"
         )) { prop.loadFromXML(fis);
         } catch (FileNotFoundException e) {
@@ -72,34 +74,40 @@ public class MemberDAO {
             throw new RuntimeException("회원가입 중 오류가 발생되었습니다.", e);
         }
     }
-    // 아이디, 암호 일치 여부
-    public MemberDTO login(String loginId, String password){
-        String query = prop.getProperty("checkLogin");
+
+    // 회원 가입 후 즉시 로그인을 위한 SQL
+    public MemberDTO selectMemberByLoginId(String loginId) {
+
+        String query = prop.getProperty("selectMemberByLoginId");
 
         try (Connection con = getConnection();
-            PreparedStatement pstmt = con.prepareStatement(query)){
+             PreparedStatement pstmt = con.prepareStatement(query)) {
 
-                pstmt.setString(1, loginId);
-                pstmt.setString(2, password);
+            pstmt.setString(1, loginId);
 
-            ResultSet rset = pstmt.executeQuery();
+            try (ResultSet rset = pstmt.executeQuery()) {
 
-            if (rset.next()) {
-                return  new MemberDTO(
-                rset.getInt("member_code"),
-                rset.getInt("grade_code"),
-                rset.getString("login_id"),
-                rset.getString("password"),
-                rset.getString("nickname"),
-                rset.getInt("phone"),
-                rset.getInt("point_balance"),
-                rset.getInt("total_amount"));
+                if (rset.next()) {
+                    return new MemberDTO(
+                            rset.getInt("member_code"),
+                            rset.getInt("grade_code"),
+                            rset.getString("login_id"),
+                            rset.getString("password"),
+                            rset.getString("nickname"),
+                            rset.getInt("phone"),
+                            rset.getInt("point_balance"),
+                            rset.getInt("total_amount")
+                    );
+                }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("로그인 중 오류가 발생되었습니다.", e);
+            throw new RuntimeException(
+                    "가입 회원 조회 중 오류가 발생했습니다.", e
+            );
         }
         return null;
     }
+
 
     // 정보 조회
     public MemberDTO selectMember(MemberDTO member) {
@@ -129,8 +137,6 @@ public class MemberDAO {
         return null;
     }
 
-
-
     // 정보 변경
     public int modifyMember(MemberDTO member){
         String query = prop.getProperty("modifyMemberInfo");
@@ -149,5 +155,90 @@ public class MemberDAO {
             throw new RuntimeException("멤버십 정보 변경 중 오류가 발생되었습니다.", e);
         }
     }
+
+    public int plusTotalAmount(int memberCode, int finalAmount) {
+        String query = prop.getProperty("increaseTotalAmount");
+
+        try (Connection con = getConnection();
+             PreparedStatement pstmt = con.prepareStatement(query)) {
+
+            pstmt.setInt(1, finalAmount);
+            pstmt.setInt(2, memberCode);
+
+        return pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("누적 금액 증가 오류가 발생되었습니다.", e);
+        }
     }
 
+    public int minusTotalAmount(int memberCode, int previousAmount) {
+        String query = prop.getProperty("decreaseTotalAmount");
+
+        try (Connection con = getConnection();
+             PreparedStatement pstmt = con.prepareStatement(query)) {
+
+            pstmt.setInt(1, previousAmount);
+            pstmt.setInt(2, memberCode);
+
+            return pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("누적 금액 차감 오류가 발생되었습니다.", e);
+        }
+    }
+
+    // 포인트 적립 및 반환
+    public int plusPointBalance(int memberCode, int pointAmount){
+        String query = prop.getProperty("increasePointBalance");
+
+        try (Connection con = getConnection();
+            PreparedStatement pstmt = con.prepareStatement(query)){
+
+            pstmt.setInt(1,pointAmount);
+            pstmt.setInt(2,memberCode);
+
+            return pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // 포인트 차감
+    public int minusPointBalance(int memberCode, int pointAmount){
+        String query = prop.getProperty("decreasePointBalance");
+
+        try (Connection con = getConnection();
+             PreparedStatement pstmt = con.prepareStatement(query)){
+
+            pstmt.setInt(1,pointAmount);
+            pstmt.setInt(2,memberCode);
+            // SQL의 세 번째 조건에서 현재 포인트가 차감액 이상인지 확인
+            pstmt.setInt(3, pointAmount);
+
+            return pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public int withdrawMember(int memberCode) {
+
+        // 실제 DELETE가 아니라 기존 주문 참조를 유지하는 비식별 UPDATE 쿼리
+        String query = prop.getProperty("withdrawMember");
+
+        try (Connection con = getConnection();
+             PreparedStatement pstmt = con.prepareStatement(query)) {
+
+            pstmt.setInt(1, memberCode);
+
+            return pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(
+                    "회원 탈퇴 처리 중 오류가 발생했습니다.", e);
+        }
+    }
+    }

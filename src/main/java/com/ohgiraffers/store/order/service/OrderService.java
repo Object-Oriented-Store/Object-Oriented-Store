@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class OrderService {
 
@@ -350,6 +351,42 @@ public class OrderService {
         } catch (SQLException e) {
             throw new RuntimeException(
                     "주문 상품 전체 삭제 중 오류가 발생했습니다.",
+                    e
+            );
+        }
+    }
+
+    // 로그인한 회원의 결제 전 주문 상품 조회
+    public List<OrderItemDTO> findPendingOrderItems(
+            int memberCode
+    ) {
+        if (memberCode <= 0) {
+            throw new IllegalArgumentException(
+                    "회원번호는 1 이상이어야 합니다."
+            );
+        }
+
+        try (Connection connection =
+                     DBConnection.getConnection()) {
+
+            OrderDTO pendingOrder =
+                    orderDAO.findPendingOrderByMemberCode(
+                            connection,
+                            memberCode
+                    );
+
+            if (pendingOrder == null) {
+                return List.of();
+            }
+
+            return orderItemDAO.findAllByOrderCode(
+                    connection,
+                    pendingOrder.getOrderCode()
+            );
+
+        } catch (SQLException e) {
+            throw new RuntimeException(
+                    "주문 상품 조회 중 오류가 발생했습니다.",
                     e
             );
         }
