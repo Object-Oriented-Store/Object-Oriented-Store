@@ -38,24 +38,34 @@ public class Controller {
 
     }
 
-    public String Start() {
+    // 프로그램 실행 첫 화면
+    public MemberDTO Start() {
 
         boolean sw = true;
-        String userName;
+        MemberDTO loggedInMember;
         while (sw) {
             System.out.println("==============객체지향점==============");
             System.out.println("어서오세요, 객체지향 편의점 입니다~!");
             System.out.println("1. 로그인");
             System.out.println("2. 회원가입");
+            System.out.println("3. 프로그램 종료");
             System.out.print("메뉴를 선택해 주세요: ");
             int choice1 = sc.nextInt();
             switch (choice1) {
                 case 1:
-                    userName = mb.logIn();
-                    sw = false;
-                    return userName;
+                    loggedInMember = mb.logIn();
+                    if (loggedInMember != null){
+                        return loggedInMember;
+                    }
+                    break;
                 case 2:
-                    memberView.joinMember();
+                    loggedInMember = memberView.joinMember();
+
+                    if (loggedInMember != null){
+                        return loggedInMember;
+                    }
+                    break;
+                case 3:
                     sw = false;
                     break;
                 default:
@@ -64,7 +74,44 @@ public class Controller {
             }
         }
 
-        return "";
+        return null;
+    }
+
+    // 멤버십 회원 메인 화면
+    public void startMember(MemberDTO loggedInMember) {
+
+        if (loggedInMember == null
+                || loggedInMember.getMemberCode() <= 0) {
+            System.out.println("로그인 정보가 없습니다.");
+            return;
+        }
+
+        String nickname = loggedInMember.getNickname();
+
+        System.out.printf("%s 고객님, \n객체지향점에 오신 걸 환영합니다!\n", nickname);
+        System.out.println("==============객체지향점==============");
+        System.out.println("[멤버십 전용 메뉴]");
+        System.out.println("1. 구매하기");
+        System.out.println("2. My Membership");
+        System.out.println("======================================");
+        System.out.print("메뉴를 정수로 입력하세요: ");
+        int choice2 = sc.nextInt();
+
+        switch (choice2) {
+            case 1:
+                SelectCategory(nickname);
+                break;
+            case 2:
+               memberView.MyMembership(loggedInMember);
+                break;
+            case 3:
+                //프로그램 종료 여부
+                break;
+            default:
+                System.out.println("잘못입력하셨습니다. 이전 단계로 돌아갑니다.");
+                startMember(loggedInMember);
+                break;
+        }
     }
 
     public void SelectCategory(String userName){
@@ -82,13 +129,13 @@ public class Controller {
         System.out.println("10. 담배");
         System.out.println("====================================");
         System.out.print("메뉴를 정수로 입력하세요: ");
-        int choice2 = sc.nextInt();
+        int choice3 = sc.nextInt();
 
         String sql = prop.getProperty("selectCategory");
         try (Connection conn = DriverManager.getConnection(
                 "jdbc:mysql://localhost:3306/object_oriented_store", "oodbms", "oodbms");
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, choice2);
+            pstmt.setInt(1, choice3);
 
             System.out.println("===================================");
             try (ResultSet rs = pstmt.executeQuery()) {
@@ -108,12 +155,11 @@ public class Controller {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
-
     }
 
+    // 관리자 메인 화면
     public void startManager()  {
-        PromotionDAO  pdao = new PromotionDAO();
+        PromotionDAO pdao = new PromotionDAO();
         PromotionService service = new PromotionService();
         SettingsOnlyManager som = new SettingsOnlyManager(sc);
         System.out.println("==============객체지향점==============");
@@ -125,9 +171,9 @@ public class Controller {
         System.out.println("5. 기존 행사에 행사상품을 추가");
         System.out.println("======================================");
         System.out.println("메뉴를 정수로 입력하세요: ");
-        int choice3 = sc.nextInt();
+        int choice4 = sc.nextInt();
         sc.nextLine();
-        switch (choice3){
+        switch (choice4){
             case 1:
                 service.printCurrentlyPromotion();
                 break;
