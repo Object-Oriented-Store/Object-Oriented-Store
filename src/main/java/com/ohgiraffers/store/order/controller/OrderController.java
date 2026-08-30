@@ -1,5 +1,6 @@
 package com.ohgiraffers.store.order.controller;
 
+import com.ohgiraffers.store.order.model.OrderDTO;
 import com.ohgiraffers.store.order.model.OrderItemDTO;
 import com.ohgiraffers.store.order.service.OrderService;
 
@@ -64,6 +65,16 @@ public class OrderController {
     ) {
 
         return orderService.findPendingOrderItems(
+                memberCode
+        );
+    }
+
+    // 결제 전 주문과 누적 금액 조회 요청
+    public OrderDTO findPendingOrder(
+            int memberCode
+    ) {
+
+        return orderService.findPendingOrder(
                 memberCode
         );
     }
