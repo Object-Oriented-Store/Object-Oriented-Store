@@ -52,11 +52,10 @@ public class MembershipGradeDAO {
         }
 
         // 회원의 현재 누적 구매 금액을 기준으로 등급 코드를 갱신
-        public int updateMembershipGrade(int memberCode){
+        public int updateMembershipGrade(Connection con, int memberCode){
             String query = prop.getProperty("updateMembershipGrade");
 
-            try (Connection con = getConnection();
-                PreparedStatement pstmt = con.prepareStatement(query)){
+            try (PreparedStatement pstmt = con.prepareStatement(query)){
 
                 pstmt.setInt(1, memberCode);
 
@@ -68,11 +67,10 @@ public class MembershipGradeDAO {
         }
 
         // 회원의 현재 등급에 설정된 포인트 적립률을 조회
-        public int selectRewardRate(int memberCode){
+        public int selectRewardRate(Connection con, int memberCode){
             String query = prop.getProperty("selectRewardRate");
 
-            try (Connection con = getConnection();
-                PreparedStatement pstmt = con.prepareStatement(query)){
+            try (PreparedStatement pstmt = con.prepareStatement(query)){
 
                 pstmt.setInt(1,memberCode);
 

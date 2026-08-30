@@ -2,7 +2,7 @@ package com.ohgiraffers.store.member.view;
 
 import com.ohgiraffers.store.member.controller.MemberController;
 import com.ohgiraffers.store.member.model.MemberDTO;
-import com.ohgiraffers.store.member.model.MembershipGradeDTO;
+import com.ohgiraffers.store.payment.view.PaymentView;
 
 import java.util.Scanner;
 
@@ -10,6 +10,7 @@ public class MemberView {
 
     // 화면 입력을 Controller에 전달하고 처리 결과를 출력하는 객체
     private final MemberController memberController = new MemberController();
+    private final PaymentView paymentView = new PaymentView();
     // false가 되면 로그인 회원용 메뉴 반복을 종료
     boolean isLoggedIn = true;
 
@@ -68,21 +69,20 @@ public class MemberView {
     }
 
     //My Membership 선택 시 보여지는 화면
-    public void MyMembership(MemberDTO loggedInMember) {
+    public boolean MyMembership(MemberDTO loggedInMember) {
 
         if (loggedInMember == null || loggedInMember.getMemberCode() <= 0){
             System.out.println("로그인 정보를 불러올 수 없습니다.");
-            return;
+            return false;
         }
 
-        while(isLoggedIn){
+        while(true){
             System.out.println("=============My Membership============");
             System.out.println("  1. 내 정보 조회");
-            System.out.println("  2. 주문 내역 확인");
-            System.out.println("  3. 회원정보 수정");
+            System.out.println("  2. 결제 내역 조회");
+            System.out.println("  3. 멤버십 정보 수정");
             System.out.println("  4. 멤버십 탈퇴");
             System.out.println("  5. 메인 화면으로");
-            System.out.println("  6. 프로그램 종료");
             System.out.println("======================================");
 
             int menu = inputNumber("메뉴 번호를 입력해주세요 : ");
@@ -93,7 +93,7 @@ public class MemberView {
                     break;
 
                 case 2:
-                    // 주문 내역 조회 메서드 호출
+                    paymentView.run(loggedInMember.getMemberCode());
                     break;
 
                 case 3:
@@ -105,20 +105,13 @@ public class MemberView {
                     boolean withdrawn = withdrawMemberMenu(loggedInMember);
 
                     if(withdrawn){
-                        isLoggedIn = false;
-                        return;
+                       return true;
                     }
-
                     break;
 
                 case 5:
                     System.out.println("메인 화면으로 이동합니다.");
-                    return;
-
-                case 6:
-                    isLoggedIn = false;
-                    System.out.println("프로그램을 종료합니다.");
-                    return;
+                    return false;
 
                 default:
                     System.out.println("1~6 사이의 숫자를 입력해주세요.");
@@ -129,6 +122,8 @@ public class MemberView {
     // MyMembership - 내정보 조회
     public void selectMemberMenu(MemberDTO loggedInMember) {
 
+        while (isLoggedIn) {
+
         // 로그인 시 저장한 회원 코드를 기준으로 DB의 최신 회원 정보를 다시 조회
         MemberDTO memberinfo = memberController.selectMember(loggedInMember);
         if (memberinfo == null){
@@ -138,7 +133,6 @@ public class MemberView {
 
         String gradeName = memberController.selectGradeName(memberinfo);
 
-        while (isLoggedIn) {
             System.out.println();
             System.out.println("========== My 멤버십 상세 ==========");
             System.out.println(" 멤버십 등급 : " +  gradeName);
@@ -148,12 +142,12 @@ public class MemberView {
             System.out.printf(" 휴대폰 번호 : %08d%n", memberinfo.getPhone());
             System.out.println(" 보유 포인트 : " + memberinfo.getPointBalance());
             System.out.println(" 총 구매 누적 금액 : " + memberinfo.getTotalAmount());
-            System.out.println("----------------------------------------");
 
-            System.out.println("  1. 회원정보 수정");
-            System.out.println("  2. 메인 화면으로");
+            System.out.println("----------------------------------------");
+            System.out.println("  1. 멤버십 정보 수정");
+            System.out.println("  2. 이전 화면으로");
             System.out.println("  3. 프로그램 종료");
-            System.out.println("--------------------------------");
+            System.out.println("----------------------------------------");
 
 
             int menu = inputNumber("메뉴 번호를 입력해주세요 : ");
@@ -162,8 +156,9 @@ public class MemberView {
                 case 1:
                     modifyMemberMenu(loggedInMember);
                     break;
+
                 case 2:
-                    System.out.println("메인 화면으로 이동합니다.");
+                    System.out.println("이전 화면으로 이동합니다.");
                     return;
 
                 case 3:
@@ -218,11 +213,9 @@ public class MemberView {
     public boolean withdrawMemberMenu(MemberDTO loggedInMember) {
         System.out.println();
         System.out.println("----------- 멤버십 탈퇴 -----------");
-        System.out.println("탈퇴 시 동일한 계정으로 이용할 수 없습니다.");
-        System.out.println("보유 포인트 및 총 누적 금액이 모두 소멸됩니다.");
-        System.out.println("탈퇴 하시겠습니까?");
-        System.out.println("1. 탈퇴");
-        System.out.println("2. 취소(뒤로가기)");
+        System.out.println("탈퇴 시 계정 이용 및 복구가 불가합니다.");
+        System.out.println("또한, 보유 포인트 및 총 누적 금액이 모두 소멸됩니다.");
+        System.out.println("정말 탈퇴 하시겠습니까? 1, 2");
 
         int number = inputNumber("메뉴 번호를 입력해주세요 : ");
 

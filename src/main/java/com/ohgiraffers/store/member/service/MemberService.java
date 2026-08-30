@@ -4,6 +4,8 @@ import com.ohgiraffers.store.member.model.MemberDTO;
 import com.ohgiraffers.store.member.repository.MemberDAO;
 import com.ohgiraffers.store.member.repository.MembershipGradeDAO;
 
+import java.sql.Connection;
+
 public class MemberService {
 
     // Service는 입력값과 업무 규칙을 검증한 뒤 필요한 DAO를 호출
@@ -107,7 +109,7 @@ public class MemberService {
     }
 
     // 누적 구매 금액 추가
-    public boolean plusTotalAmount(int memberCode, int finalAmount){
+    public boolean plusTotalAmount(Connection con, int memberCode, int finalAmount){
 
         if (memberCode <= 0){
             return false;
@@ -115,20 +117,20 @@ public class MemberService {
         if (finalAmount <= 0){
             return false;
         }
-        int amountResult = memberDAO.plusTotalAmount(memberCode, finalAmount);
+        int amountResult = memberDAO.plusTotalAmount(con, memberCode, finalAmount);
 
         if (amountResult <= 0){
             return false;
         }
 
         // 누적 금액이 변경된 직후 현재 누적 금액을 기준으로 등급도 다시 계산
-        int gradeResult = memberGradeDAO.updateMembershipGrade(memberCode);
+        int gradeResult = memberGradeDAO.updateMembershipGrade(con, memberCode);
 
         return gradeResult > 0;
     }
 
     // 누적 구매 금액 차감
-    public boolean minusTotalAmount(int memberCode, int previousAmount){
+    public boolean minusTotalAmount(Connection con, int memberCode, int previousAmount){
 
         if (memberCode <= 0){
             return false;
@@ -136,38 +138,38 @@ public class MemberService {
         if (previousAmount <= 0){
             return false;
         }
-        int amountResult = memberDAO.minusTotalAmount(memberCode, previousAmount);
+        int amountResult = memberDAO.minusTotalAmount(con, memberCode, previousAmount);
 
         if (amountResult <= 0){
             return false;
         }
 
         // 결제 취소로 누적 금액이 줄면 등급이 내려갈 수도 있으므로 다시 계산
-        int gradeResult = memberGradeDAO.updateMembershipGrade(memberCode);
+        int gradeResult = memberGradeDAO.updateMembershipGrade(con, memberCode);
 
         return gradeResult > 0;
     }
 
     // 멤버십 등급 업데이트
-    public boolean updateMembershipGrade(int memberCode){
+    public boolean updateMembershipGrade(Connection con, int memberCode){
 
         if (memberCode <= 0){
             return false;
         }
 
-        int result = memberGradeDAO.updateMembershipGrade(memberCode);
+        int result = memberGradeDAO.updateMembershipGrade(con, memberCode);
 
         return result > 0;
     }
 
     // 포인트 적립
-    public boolean earnPoint(int memberCode, int finalAmount) {
+    public boolean earnPoint(Connection con, int memberCode, int finalAmount) {
 
         if (memberCode <= 0 || finalAmount <= 0) {
             return false;
         }
 
-        int rewardRate = memberGradeDAO.selectRewardRate(memberCode);
+        int rewardRate = memberGradeDAO.selectRewardRate(con, memberCode);
 
         int earnedPoint = finalAmount * rewardRate / 100;
 
@@ -176,13 +178,13 @@ public class MemberService {
             return true;
         }
 
-        int result = memberDAO.plusPointBalance(memberCode, earnedPoint);
+        int result = memberDAO.plusPointBalance(con, memberCode, earnedPoint);
 
         return result > 0;
     }
 
     // 결제 취소로 인한 사용된 포인트 복구
-    public boolean restoreUsedPoint(int memberCode, int usedPoint) {
+    public boolean restoreUsedPoint(Connection con, int memberCode, int usedPoint) {
         if (memberCode <= 0 || usedPoint < 0) {
             return false;
         }
@@ -191,13 +193,13 @@ public class MemberService {
             return true;
         }
 
-        int result = memberDAO.plusPointBalance(memberCode, usedPoint);
+        int result = memberDAO.plusPointBalance(con, memberCode, usedPoint);
 
         return result > 0;
     }
 
     // 포인트 차감(사용)
-    public int useAllPoint(int memberCode, int paymentAmount) {
+    public int useAllPoint(Connection con, int memberCode, int paymentAmount) {
         // 반환값: -1은 처리 실패, 0은 사용할 포인트 없음, 양수는 실제 사용 포인트
         if (memberCode <= 0 || paymentAmount <= 0) {
             return -1;
@@ -221,15 +223,27 @@ public class MemberService {
         // 보유 포인트와 결제할 금액 중 작은 값 사용
         int usedPoint = Math.min(pointBalance, paymentAmount);
 
-        int result = memberDAO.minusPointBalance(memberCode, usedPoint);
+        int result = memberDAO.minusPointBalance(con, memberCode, usedPoint);
 
         if (result <= 0) {
             return -1;
         }
         return usedPoint;
     }
+
+    // 결제금액을 기준으로 적립 포인트 계산
+    public int calculateEarnedPoint(Connection con, int memberCode, int finalAmount) {
+        if (memberCode <= 0 || finalAmount <= 0) {
+            return 0;
+        }
+
+        int rewardRate = memberGradeDAO.selectRewardRate(con, memberCode);
+
+        return finalAmount * rewardRate / 100;
+    }
+
     // 결제 취소 시 지급된 포인트 회수
-    public boolean cancelEarnedPoint(int memberCode, int earnedPoint) {
+    public boolean cancelEarnedPoint(Connection con, int memberCode, int earnedPoint) {
         if (memberCode <= 0 || earnedPoint < 0) {
             return false;
         }
@@ -238,7 +252,7 @@ public class MemberService {
             return true;
         }
 
-        int result = memberDAO.minusPointBalance(memberCode, earnedPoint);
+        int result = memberDAO.minusPointBalance(con, memberCode, earnedPoint);
 
         return result > 0;
     }
