@@ -4,11 +4,12 @@ import com.ohgiraffers.store.member.model.MemberDTO;
 import com.ohgiraffers.store.member.model.Membership;
 import com.ohgiraffers.store.member.service.MemberService;
 import com.ohgiraffers.store.member.view.MemberView;
-import com.ohgiraffers.store.product.view.MemberProductMenu;
 import com.ohgiraffers.store.product.view.ProductMenu;
 import com.ohgiraffers.store.promotion.model.PromotionDAO;
 import com.ohgiraffers.store.promotion.service.PromotionService;
 import com.ohgiraffers.store.promotion.service.SettingsOnlyManager;
+import com.ohgiraffers.store.order.view.OrderPurchaseView;
+import com.ohgiraffers.store.order.view.OrderView;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -21,8 +22,9 @@ public class Controller {
     Membership mb;
     Properties prop = new Properties();
     MemberService memberService = new MemberService();
-    MemberView  memberView = new MemberView();
+    MemberView memberView = new MemberView();
     MemberDTO membe = new MemberDTO();
+
     public Controller(Scanner sc) {
         this.sc = sc;
         this.mb = new Membership(sc);
@@ -56,14 +58,14 @@ public class Controller {
             switch (choice1) {
                 case 1:
                     loggedInMember = mb.logIn();
-                    if (loggedInMember != null){
+                    if (loggedInMember != null) {
                         return loggedInMember;
                     }
                     break;
                 case 2:
                     loggedInMember = memberView.joinMember();
 
-                    if (loggedInMember != null){
+                    if (loggedInMember != null) {
                         return loggedInMember;
                     }
                     break;
@@ -102,11 +104,23 @@ public class Controller {
             System.out.println("======================================");
             System.out.print("메뉴를 정수로 입력하세요: ");
             int choice2 = sc.nextInt();
+            sc.nextLine();
 
             switch (choice2) {
-                case 1:
-                    new MemberProductMenu().run();
+                case 1: {
+                    int purchaseResult =
+                            new OrderPurchaseView(sc).run(
+                                    loggedInMember.getMemberCode()
+                            );
+                    if (purchaseResult
+                            == OrderView.REQUEST_PAYMENT) {
+
+                        System.out.println(
+                                "결제 화면 연결이 필요합니다."
+                        );
+                    }
                     break;
+                }
                 case 2:
                     memberView.MyMembership(loggedInMember);
                     break;
@@ -120,7 +134,7 @@ public class Controller {
         }
     }
 
-    public void SelectCategory(String userName){
+    public void SelectCategory(String userName) {
         System.out.printf("%s 고객님, \n객체지향점에 오신 걸 환영합니다!\n", userName);
         System.out.println("==============카테고리==============");
         System.out.println("1. 행사제품");
@@ -161,7 +175,7 @@ public class Controller {
     }
 
     // 관리자 메인 화면
-    public void startManager()  {
+    public void startManager() {
         PromotionDAO pdao = new PromotionDAO();
         PromotionService service = new PromotionService();
         SettingsOnlyManager som = new SettingsOnlyManager(sc);
@@ -178,7 +192,7 @@ public class Controller {
         System.out.println("메뉴를 정수로 입력하세요: ");
         int choice4 = sc.nextInt();
         sc.nextLine();
-        switch (choice4){
+        switch (choice4) {
             case 1:
                 som.RegisterPromotion();
                 startManager();

@@ -161,7 +161,7 @@ public class OrderView {
             }
 
             System.out.println(
-                    "y 또는 n으로 입력해주세요."
+                    "Y 또는 N으로 입력해주세요."
             );
         }
     }
@@ -257,7 +257,7 @@ public class OrderView {
 
         boolean addMore =
                 readYesOrNo(
-                        "상품을 더 추가하시겠습니까? (y/n): "
+                        "상품을 더 추가하시겠습니까? (Y/N): "
                 );
 
         if (addMore) {
@@ -412,7 +412,7 @@ public class OrderView {
 
         boolean confirmed =
                 readYesOrNo(
-                        "결제 단계로 이동하시겠습니까? (y/n): "
+                        "결제 단계로 이동하시겠습니까? (Y/N): "
                 );
 
         if (confirmed) {
