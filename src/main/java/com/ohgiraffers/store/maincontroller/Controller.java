@@ -136,8 +136,7 @@ public class Controller {
                     if (purchaseResult
                             == OrderView.REQUEST_PAYMENT) {
 
-                        PaymentView paymentView =
-                                new PaymentView(sc);
+                        PaymentView paymentView = new PaymentView(sc);
 
                         paymentView.checkout(loggedInMember.getMemberCode()
                         );
