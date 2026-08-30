@@ -38,9 +38,7 @@ public class SettingsOnlyManager {
         }
     }
 
-    public SettingsOnlyManager() {
 
-    }
 
 
 
@@ -60,7 +58,7 @@ public class SettingsOnlyManager {
         pd.setDiscountValue(sc.nextInt());
         pd.setPromotionStatus("Y");
 
-        pa.registerPromotion();
+        pa.registerPromotion(pd);
 
         System.out.println("==========새로 등록한 행사==========");
         System.out.println("행사명: " + pd.getPromotionName());
@@ -72,18 +70,26 @@ public class SettingsOnlyManager {
 
         public void RegisterPromotionProduct() throws SQLException {
         PromotionService promotionService = new PromotionService();
+        PromotionDAO pa = new PromotionDAO();
+        PromotionService ps = new PromotionService();
+        PromotionDTO pd = new PromotionDTO();
         promotionService.printCurrentlyPromotion(conn);
+
 
         System.out.println("상품을 등록할 행사코드을 입력하세요: ");
         int promotionCode = sc.nextInt();
         System.out.println("행사에 등록할 상품코드를 입력하세요");
         int promotionProductCode = sc.nextInt();
 
+        pa.registerPromoWithProduct(conn, pd, promotionCode, promotionProductCode);
+
+        System.out.println("상품의 행사등록이 완료되었습니다.");
 
     }
 
     public void UpdatePromotion() throws SQLException {
         PromotionService ps = new PromotionService();
+        PromotionDTO pd = new PromotionDTO();
 
         System.out.print("기존의 행사 목록을 조회하시겠습니까?");
         System.out.print("(1-Yes, 이외의 키-No): ");
@@ -95,7 +101,7 @@ public class SettingsOnlyManager {
         System.out.print("수정할 행사의 행사코드를 입력하세요: ");
         int WannaCode =  sc.nextInt();
 
-        ps.updatePromotion(WannaCode);
+        ps.updatePromotion(WannaCode, pd);
 
     }
 

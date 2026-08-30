@@ -21,7 +21,7 @@ public class PromotionDAO {
         }
     }
 
-    public void updatePromotion(Connection conn, int wc) {
+    public void updatePromotion(Connection conn, int wc, PromotionDTO pd) {
         String sql = prop.getProperty("UpdatePromotion");
         System.out.println("===================================");
 
@@ -44,7 +44,7 @@ public class PromotionDAO {
         }
     }
 
-    public void registerPromotion(){
+    public void registerPromotion(PromotionDTO pd) {
         String query = prop.getProperty("RegisterPromotion");
 
         try (Connection conn = DriverManager.getConnection(
@@ -78,8 +78,10 @@ public class PromotionDAO {
         {
             try (ResultSet rs = pstmt.executeQuery()) {
                 pstmt.setInt(1, wc);
-                System.out.println("행사명: " + rs.getString("promotion_name"));
-                System.out.println("행사내용: " + rs.getString("promotion_column"));
+                while (rs.next()) {
+                    System.out.println("행사명: " + rs.getString("promotion_name"));
+                    System.out.println("행사내용: " + rs.getString("promotion_column"));
+                }
                 System.out.println("=================================");
                 System.out.println("위 행사를 삭제하시겠습니까? ");
                 System.out.print("삭제를 원하시면 1, 아니라면 0을 입력하세요: ");
@@ -95,19 +97,25 @@ public class PromotionDAO {
     public void deletePromotion(Connection conn,int delcode){
         String sql = prop.getProperty("DeletePromotion");
         System.out.println("===================================");
-        PreparedStatement pstmt = null;
 
         try {
-            pstmt = conn.prepareStatement(sql);
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, delcode);
+            pstmt.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        {
-            try (ResultSet rs = pstmt.executeQuery()) {
-                pstmt.setInt(1, delcode);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+    }
+
+    public void registerPromoWithProduct(Connection conn, PromotionDTO pd, int promoCode, int productCode) {
+        String sql = prop.getProperty("RegisterPromotionProduct");
+        try {
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, promoCode);
+            pstmt.setInt(2, productCode);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -5,18 +5,29 @@ import com.ohgiraffers.store.common.config.DBConnection;
 import com.ohgiraffers.store.promotion.model.PromotionDAO;
 import com.ohgiraffers.store.promotion.model.PromotionDTO;
 
-import javax.xml.transform.Result;
+
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.*;
-import java.util.Objects;
+
 import java.util.Properties;
 import java.util.Scanner;
 
 public class PromotionService {
     PromotionDAO promotionDAO = new PromotionDAO();
-    private Properties prop = new Properties();
+    private final Properties prop = new Properties();
     PromotionDTO pd = new PromotionDTO();
     Scanner sc = new Scanner(System.in);
     Connection conn;
+    public PromotionService() {
+        try {
+            prop.loadFromXML(new FileInputStream(
+                    "src/main/java/com/ohgiraffers/store/common/mapper/promotion-query.xml"
+            ));
+        } catch (IOException e) {
+            throw new RuntimeException("프로모션 쿼리 XML 로드 실패", e);
+        }
+    }
 
     {
         try {
@@ -29,7 +40,7 @@ public class PromotionService {
 
     public void printCurrentlyPromotion(Connection conn)  {
 
-        String sql = "SELECT promotion_code, promotion_name, promotion_column, discount_value, promotion_status FROM tbl_promotion ";
+        String sql = prop.getProperty("PrintCurrentlyPromotion");
         System.out.println("===================================");
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -43,12 +54,12 @@ public class PromotionService {
                 System.out.println();
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("진행 중 행사 조회 실패", e);
         }
 
     }
 
-    public void updatePromotion(int wc){
+    public void updatePromotion(int wc, PromotionDTO pd) {
         System.out.println("[" + wc + "번 행사 수정]");
         System.out.print("수정 행사명: ");
         pd.setPromotionName(sc.nextLine());
@@ -56,15 +67,16 @@ public class PromotionService {
         pd.setPromotionColumn(sc.nextLine());
         System.out.print("수정 할인율: ");
         pd.setDiscountValue(sc.nextInt());
-        System.out.println("수정할 행사의 진행상태: ");
+        sc.nextLine();
+        System.out.print("수정할 행사의 진행상태: ");
         pd.setPromotionStatus(sc.nextLine());
 
-        promotionDAO.updatePromotion(conn, wc);
+        promotionDAO.updatePromotion(conn, wc, pd);
 
-        System.out.println(pd.getPromotionName());
-        System.out.println(pd.getPromotionColumn());
-        System.out.println(pd.getDiscountValue());
-        System.out.println(pd.getPromotionStatus());
+        System.out.println("수정한  행사명: " + pd.getPromotionName());
+        System.out.println("수정한 행사내용: " + pd.getPromotionColumn());
+        System.out.println("수정한 할인율: " + pd.getDiscountValue() + "%");
+        System.out.println("수정한 행사의 진행상태: " + pd.getPromotionStatus());
 
     }
 
