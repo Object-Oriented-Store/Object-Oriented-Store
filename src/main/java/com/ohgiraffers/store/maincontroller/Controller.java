@@ -4,7 +4,7 @@ import com.ohgiraffers.store.member.model.MemberDTO;
 import com.ohgiraffers.store.member.model.Membership;
 import com.ohgiraffers.store.member.service.MemberService;
 import com.ohgiraffers.store.member.view.MemberView;
-import com.ohgiraffers.store.promotion.model.PromotionDAO;
+import com.ohgiraffers.store.product.view.ProductMenu;
 import com.ohgiraffers.store.promotion.service.PromotionService;
 import com.ohgiraffers.store.promotion.service.SettingsOnlyManager;
 
@@ -138,14 +138,11 @@ public class Controller {
             pstmt.setInt(1, choice3);
 
             System.out.println("===================================");
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    System.out.println("상품명: " + rs.getString("product_name"));
-                    System.out.println("가격: " + rs.getString("product_price") + "원");
-                    System.out.println();
-                }
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                System.out.println("상품명: " + rs.getString("product_name"));
+                System.out.println("가격: " + rs.getString("product_price") + "원");
+                System.out.println();
             }
             sc.nextLine();
             System.out.println("===================================");
@@ -162,35 +159,53 @@ public class Controller {
         PromotionDAO pdao = new PromotionDAO();
         PromotionService service = new PromotionService();
         SettingsOnlyManager som = new SettingsOnlyManager(sc);
-        System.out.println("==============객체지향점==============");
+        ProductMenu pm = new ProductMenu();
+        System.out.println("===============객체지향점===============");
         System.out.println("[관리자용 메뉴]");
-        System.out.println("1. 진행중인 행사 조회");
-        System.out.println("2. 기존 행사 등록");
-        System.out.println("3. 기존 행사 수정");
-        System.out.println("4. 기존 행사 삭제");
-        System.out.println("5. 기존 행사에 행사상품을 추가");
+        System.out.println("1. 기존 행사 등록");
+        System.out.println("2. 기존 행사 수정");
+        System.out.println("3. 기존 행사 삭제");
+        System.out.println("4. 기존 행사에 행사상품을 추가");
+        System.out.println("5. 판매 상품 관리");
+        System.out.println("6. 메인 화면으로 이동");
         System.out.println("======================================");
         System.out.println("메뉴를 정수로 입력하세요: ");
         int choice4 = sc.nextInt();
         sc.nextLine();
         switch (choice4){
             case 1:
-                service.printCurrentlyPromotion();
+                som.RegisterPromotion();
+                startManager();
                 break;
             case 2:
-                som.RegisterPromotion();
+                try {
+                    som.UpdatePromotion();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+                startManager();
                 break;
             case 3:
-                som.UpdatePromotion();
+                som.DeletePromotion();
+                startManager();
                 break;
             case 4:
-                som.DeletePromotion();
+                try {
+                    som.RegisterPromotionProduct();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+                startManager();
                 break;
             case 5:
-                som.RegisterPromotionProduct();
+                pm.run();
+                startManager();
+                break;
+            case 6:
+                Start();
                 break;
             default:
-                System.out.println("잘못입력하셨습니다. 이전 단계로 돌아갑니다.");
+                System.out.println("잘못입력하셨습니다. 다시 입력하세요.");
                 startManager();
                 break;
         }
