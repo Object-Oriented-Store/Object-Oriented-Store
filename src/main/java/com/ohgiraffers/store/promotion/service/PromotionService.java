@@ -38,6 +38,25 @@ public class PromotionService {
         }
     }
 
+    // 숫자가 아닌 입력으로 프로그램이 종료되지 않도록 정수 입력을 반복 처리
+    private int inputNumber(String prompt) {
+
+        while (true) {
+            System.out.print(prompt);
+
+            // 한 줄 전체 입력 후 앞뒤 공백 제거
+            String input = sc.nextLine().trim();
+
+            try {
+                // 문자열을 int로 변환
+                return Integer.parseInt(input);
+
+            } catch (NumberFormatException e) {
+                System.out.println("숫자만 입력해주세요.");
+            }
+        }
+    }
+
     public void printCurrentlyPromotion(Connection conn)  {
 
         String sql = prop.getProperty("PrintCurrentlyPromotion");
@@ -65,9 +84,7 @@ public class PromotionService {
         pd.setPromotionName(sc.nextLine());
         System.out.print("수정 행사내용: ");
         pd.setPromotionColumn(sc.nextLine());
-        System.out.print("수정 할인율: ");
-        pd.setDiscountValue(sc.nextInt());
-        sc.nextLine();
+        pd.setDiscountValue(inputNumber("수정 할인율: "));
         System.out.print("수정할 행사의 진행상태: ");
         pd.setPromotionStatus(sc.nextLine());
 

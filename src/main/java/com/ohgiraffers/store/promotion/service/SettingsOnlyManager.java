@@ -38,9 +38,24 @@ public class SettingsOnlyManager {
         }
     }
 
+    // 숫자가 아닌 입력으로 프로그램이 종료되지 않도록 정수 입력을 반복 처리
+    private int inputNumber(String prompt) {
 
+        while (true) {
+            System.out.print(prompt);
 
+            // 한 줄 전체 입력 후 앞뒤 공백 제거
+            String input = sc.nextLine().trim();
 
+            try {
+                // 문자열을 int로 변환
+                return Integer.parseInt(input);
+
+            } catch (NumberFormatException e) {
+                System.out.println("숫자만 입력해주세요.");
+            }
+        }
+    }
 
     public void RegisterPromotion() {
         PromotionDAO pa = new PromotionDAO();
@@ -48,14 +63,10 @@ public class SettingsOnlyManager {
         PromotionDTO pd = new PromotionDTO();
         System.out.println("============행사등록============");
         System.out.print("행사명: ");
-        // String promotionName = sc.nextLine();
         pd.setPromotionName(sc.nextLine());
         System.out.print("행사내용: ");
-        // String promotionColumn =  sc.nextLine();
         pd.setPromotionColumn(sc.nextLine());
-        System.out.print("할인율: ");
-        // int discount = Integer.parseInt(sc.nextLine());
-        pd.setDiscountValue(sc.nextInt());
+        pd.setDiscountValue(inputNumber("할인율: "));
         pd.setPromotionStatus("Y");
 
         pa.registerPromotion(pd);
@@ -75,11 +86,8 @@ public class SettingsOnlyManager {
         PromotionDTO pd = new PromotionDTO();
         promotionService.printCurrentlyPromotion(conn);
 
-
-        System.out.println("상품을 등록할 행사코드을 입력하세요: ");
-        int promotionCode = sc.nextInt();
-        System.out.println("행사에 등록할 상품코드를 입력하세요");
-        int promotionProductCode = sc.nextInt();
+        int promotionCode = inputNumber("상품을 등록할 행사코드을 입력하세요: ");
+        int promotionProductCode = inputNumber("행사에 등록할 상품코드를 입력하세요: ");
 
         pa.registerPromoWithProduct(conn, pd, promotionCode, promotionProductCode);
 
@@ -91,15 +99,13 @@ public class SettingsOnlyManager {
         PromotionService ps = new PromotionService();
         PromotionDTO pd = new PromotionDTO();
 
-        System.out.print("기존의 행사 목록을 조회하시겠습니까?");
-        System.out.print("(1-Yes, 이외의 키-No): ");
-        int WannaRead = sc.nextInt();
+        int WannaRead = inputNumber("기존의 행사 목록을 조회하시겠습니까? \n"
+                                                        + "(1-Yes, 이외의 키-No): ");
         if (WannaRead == 1) {
             ps.printCurrentlyPromotion(conn);
         }
         System.out.println("===================================");
-        System.out.print("수정할 행사의 행사코드를 입력하세요: ");
-        int WannaCode =  sc.nextInt();
+        int WannaCode =  inputNumber("수정할 행사의 행사코드를 입력하세요: ");
 
         ps.updatePromotion(WannaCode, pd);
 
@@ -110,15 +116,13 @@ public class SettingsOnlyManager {
         PromotionService ps = new PromotionService();
         PromotionDAO promotionDAO = new PromotionDAO();
 
-        System.out.print("기존의 행사 목록을 조회하시겠습니까?(1-Yes, 이외의 키-No)");
-        int WannaRead = sc.nextInt();
+        int WannaRead = inputNumber("기존의 행사 목록을 조회하시겠습니까?(1-Yes, 이외의 키-No)");
         if (WannaRead == 1) {
             ps.printCurrentlyPromotion(conn);
 
         }
         System.out.println("================================");
-        System.out.println("삭제할 행사의 행사코드를 입력하세요: ");
-        int delCode = sc.nextInt();
+        int delCode = inputNumber("삭제할 행사의 행사코드를 입력하세요: ");
         ps.deletePromotion(conn,delCode);
 
         System.out.println(delCode + "번 행사의 데이터가 삭제되었습니다. ");
