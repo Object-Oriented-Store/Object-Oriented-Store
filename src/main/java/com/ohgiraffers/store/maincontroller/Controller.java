@@ -5,6 +5,7 @@ import com.ohgiraffers.store.member.model.Membership;
 import com.ohgiraffers.store.member.service.MemberService;
 import com.ohgiraffers.store.member.view.MemberView;
 import com.ohgiraffers.store.product.view.ProductMenu;
+import com.ohgiraffers.store.promotion.model.PromotionDAO;
 import com.ohgiraffers.store.promotion.service.PromotionService;
 import com.ohgiraffers.store.promotion.service.SettingsOnlyManager;
 
@@ -66,6 +67,8 @@ public class Controller {
                     }
                     break;
                 case 3:
+                    System.out.println("프로그램을 종료합니다. " +
+                            "");
                     sw = false;
                     break;
                 default:

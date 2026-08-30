@@ -8,9 +8,9 @@ public class PromotionDTO {
     private String promotionStatus;
 
 
-    public void PromotionDTO() {}
+    public PromotionDTO() {}
 
-    public void PromotionDTO(int promotionCode, String promotionName, String promotionColumn, int discountValue, String promotionStatu) {
+    public PromotionDTO(int promotionCode, String promotionName, String promotionColumn, int discountValue, String promotionStatus) {
         this.promotionCode=promotionCode;
         this.promotionName=promotionName;
         this.promotionColumn=promotionColumn;

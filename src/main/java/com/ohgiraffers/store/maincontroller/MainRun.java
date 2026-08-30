@@ -16,7 +16,10 @@ public class MainRun {
         PromotionRun promotionRun = new PromotionRun(sc);
         Membership membership = new Membership(sc);
         Controller cl =  new Controller(sc);
-        String userName = cl.Start(); //시작화면 메소드 호출
+        MemberDTO user = cl.Start();//시작화면 메소드 호출
+
+        String userName = user.getNickname();
+
         if(userName != "관리자"){
             cl.SelectCategory(userName);
         }
