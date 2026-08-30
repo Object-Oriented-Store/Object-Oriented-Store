@@ -14,15 +14,15 @@ public class OrderDAO {
             throws SQLException {
 
         String query = """
-            INSERT INTO tbl_order (
-                order_code,
-                member_code,
-                original_amount,
-                discount_amount,
-                final_amount
-            )
-            VALUES (?, ?, ?, ?, ?)
-            """;
+                INSERT INTO tbl_order (
+                    order_code,
+                    member_code,
+                    original_amount,
+                    discount_amount,
+                    final_amount
+                )
+                VALUES (?, ?, ?, ?, ?)
+                """;
 
         int result = 0;
 
@@ -45,22 +45,21 @@ public class OrderDAO {
             throws SQLException {
 
         String query = """
-            
-                SELECT
-                order_code,
-                member_code,
-                original_amount,
-                discount_amount,
-                final_amount,
-                ordered_at,
-                order_status,
-                refunded_at
-            FROM tbl_order
-            WHERE member_code = ?
-                AND order_status = 'PENDING'
-            ORDER BY ordered_at DESC
-            LIMIT 1
-            """;
+                    SELECT
+                    order_code,
+                    member_code,
+                    original_amount,
+                    discount_amount,
+                    final_amount,
+                    ordered_at,
+                    order_status,
+                    refunded_at
+                FROM tbl_order
+                WHERE member_code = ?
+                    AND order_status = 'PENDING'
+                ORDER BY ordered_at DESC
+                LIMIT 1
+                """;
 
         OrderDTO order = null;
 
@@ -102,15 +101,15 @@ public class OrderDAO {
     ) throws SQLException {
 
         String query = """
-            SELECT COALESCE(
-                SUM(p.product_price * oi.quantity),
-                0
-            ) AS original_amount
-            FROM tbl_order_item oi
-            JOIN tbl_product p
-              ON p.product_code = oi.product_code
-            WHERE oi.order_code = ?
-            """;
+                SELECT COALESCE(
+                    SUM(p.product_price * oi.quantity),
+                    0
+                ) AS original_amount
+                FROM tbl_order_item oi
+                JOIN tbl_product p
+                  ON p.product_code = oi.product_code
+                WHERE oi.order_code = ?
+                """;
 
         int originalAmount = 0;
 
@@ -137,13 +136,13 @@ public class OrderDAO {
     ) throws SQLException {
 
         String query = """
-            UPDATE tbl_order
-            SET original_amount = ?,
-                discount_amount = ?,
-                final_amount = ?
-            WHERE order_code = ?
-              AND order_status = 'PENDING'
-            """;
+                UPDATE tbl_order
+                SET original_amount = ?,
+                    discount_amount = ?,
+                    final_amount = ?
+                WHERE order_code = ?
+                  AND order_status = 'PENDING'
+                """;
 
         int result = 0;
 
@@ -159,5 +158,59 @@ public class OrderDAO {
 
         return result;
 
+    }
+
+    // 5. 결제 완료 시 로그인 회원의 PENDING 주문을 PAID 상태로 변경
+    public int updateOrderStatusToPaid(
+            Connection connection,
+            int orderCode,
+            int memberCode
+    ) throws SQLException {
+
+        String query = """
+                UPDATE tbl_order
+                SET order_status = 'PAID'
+                WHERE order_code = ?
+                  AND member_code = ?
+                  AND order_status = 'PENDING'
+                """;
+
+        try (PreparedStatement pstmt =
+                     connection.prepareStatement(query)) {
+
+            // 주문번호와 회원번호가 일치하는 PENDING 주문만 변경해
+            // 다른 회원의 주문 변경 및 중복 결제를 방지한다.
+            pstmt.setInt(1, orderCode);
+            pstmt.setInt(2, memberCode);
+
+            return pstmt.executeUpdate();
+        }
+    }
+
+    // 6. 결제 취소 시 로그인 회원의 PAID 주문을 CANCELED 상태로 변경
+    public int updateOrderStatusToCanceled(
+            Connection connection,
+            int orderCode,
+            int memberCode
+    ) throws SQLException {
+
+        String query = """
+                UPDATE tbl_order
+                SET order_status = 'CANCELED',
+                    refunded_at = CURRENT_TIMESTAMP
+                WHERE order_code = ?
+                    AND member_code = ?
+                    AND order_status = 'PAID'
+                    """;
+
+        try (PreparedStatement pstmt =
+                     connection.prepareStatement(query)) {
+
+            // 결제가 완료된 본인의 주문만 취소하도록 제한한다.
+            pstmt.setInt(1, orderCode);
+            pstmt.setInt(2, memberCode);
+
+            return pstmt.executeUpdate();
+        }
     }
 }
