@@ -4,7 +4,7 @@
 
     <entry key="PrintCurrentlyPromotion">
         SELECT
-            promotion_code
+            promotion_code,
             promotion_name,
             promotion_column,
             discount_value,

@@ -1,14 +1,13 @@
 package com.ohgiraffers.store.member.model;
 
-import com.ohgiraffers.store.maincontroller.Controller;
+import com.ohgiraffers.store.common.config.DBConnection;
 
 import java.sql.*;
-import java.util.Objects;
 import java.util.Scanner;
 
 public class Membership<SqlSession> {
     Scanner sc;
-    Controller cl = new Controller();
+
     public Membership(Scanner sc) {
         this.sc=sc;
     }
@@ -30,8 +29,7 @@ public class Membership<SqlSession> {
             String sql = "SELECT member_code, login_id, nickname FROM tbl_member WHERE login_id=? AND password=?";
             MemberDTO loggedInMember = null;
 
-            try (Connection conn = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/object_oriented_store", "oodbms", "oodbms");
+            try (Connection conn = DBConnection.getConnection();
                  PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
                 pstmt.setString(1, loginId);
@@ -49,9 +47,6 @@ public class Membership<SqlSession> {
 
                         System.out.println("[로그인 성공]");
                         System.out.println();
-                        if (Objects.equals(loggedInMember.getLoginId(), "admin")) {
-                            cl.startManager();
-                        }
 
                     } else {
                         System.out.println("아이디 또는 비밀번호가 틀렸습니다.");
