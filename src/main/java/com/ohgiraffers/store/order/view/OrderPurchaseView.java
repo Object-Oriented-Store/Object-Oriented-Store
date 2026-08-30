@@ -35,6 +35,43 @@ public class OrderPurchaseView {
                 new OrderView(scanner);
     }
 
+    // 상품 화면에서 선택을 마친 상품을 받아 실제 주문에 담는다.
+    public int run(
+            int memberCode,
+            ProductDTO selectedProduct
+    ) {
+
+        if (memberCode <= 0) {
+            System.out.println(
+                    "올바른 회원정보가 필요합니다."
+            );
+            return OrderView.EXIT_PURCHASE;
+        }
+
+        if (selectedProduct == null) {
+            System.out.println(
+                    "선택된 상품정보가 없습니다."
+            );
+            return OrderView.ADD_MORE_PRODUCT;
+        }
+
+        int orderResult =
+                orderView.addSelectedProduct(
+                        memberCode,
+                        selectedProduct.getProductCode(),
+                        selectedProduct.getProductName(),
+                        selectedProduct.getProductPrice(),
+                        selectedProduct.getStockQuantity()
+                );
+
+        // 상품 담기가 끝났으면 주문 담당의 장바구니 화면으로 이동한다.
+        if (orderResult == OrderView.MOVE_TO_CART) {
+            return orderView.run(memberCode);
+        }
+
+        return orderResult;
+    }
+
     // 상품 선택부터 장바구니 이동까지 실행
     public int run(
             int memberCode
@@ -60,13 +97,7 @@ public class OrderPurchaseView {
                 }
 
                 int orderResult =
-                        orderView.addSelectedProduct(
-                                memberCode,
-                                selectedProduct.getProductCode(),
-                                selectedProduct.getProductName(),
-                                selectedProduct.getProductPrice(),
-                                selectedProduct.getStockQuantity()
-                        );
+                        run(memberCode, selectedProduct);
 
                 // 상품을 더 추가하는 경우 카테고리부터 다시 선택
                 if (orderResult
@@ -75,14 +106,7 @@ public class OrderPurchaseView {
                     continue;
                 }
 
-                // 추가 상품이 없으면 장바구니 관리 화면 실행
-                if (orderResult
-                        == OrderView.MOVE_TO_CART) {
-
-                    return orderView.run(memberCode);
-                }
-
-                return OrderView.EXIT_PURCHASE;
+                return orderResult;
 
             } catch (SQLException e) {
                 System.out.println(
