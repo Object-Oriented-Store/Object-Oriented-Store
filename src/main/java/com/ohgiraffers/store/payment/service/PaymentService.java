@@ -3,6 +3,8 @@ package com.ohgiraffers.store.payment.service;
 import com.ohgiraffers.store.common.config.DBConnection;
 import com.ohgiraffers.store.member.service.MemberService;
 import com.ohgiraffers.store.order.repository.OrderDAO;
+import com.ohgiraffers.store.order.model.OrderItemDTO;
+import com.ohgiraffers.store.order.repository.OrderItemDAO;
 import com.ohgiraffers.store.payment.model.PaymentDTO;
 import com.ohgiraffers.store.payment.repository.PaymentDAO;
 
@@ -15,11 +17,13 @@ public class PaymentService {
     private final PaymentDAO paymentDAO;
     private final MemberService memberService;
     private final OrderDAO orderDAO;
+    private final OrderItemDAO orderItemDAO;
 
     public PaymentService() {
         this.paymentDAO = new PaymentDAO();
         this.memberService = new MemberService();
         this.orderDAO = new OrderDAO();
+        this.orderItemDAO = new OrderItemDAO();
     }
 
     // 로그인한 회원의 전체 결제 내역 조회
@@ -101,6 +105,37 @@ public class PaymentService {
                 if (paymentResult != 1) {
                     connection.rollback();
                     return false;
+                }
+
+                // 결제할 주문에 담긴 상품 목록 조회
+                List<OrderItemDTO> orderItems =
+                        orderItemDAO.findAllByOrderCode(
+                                connection,
+                                payment.getOrderCode()
+                        );
+
+                // 주문 상품이 없다면 결제할 수 없다.
+                if (orderItems.isEmpty()) {
+                    connection.rollback();
+                    return false;
+                }
+
+                // 결제 시점의 실제 재고를 확인하면서 주문수량만큼 차감
+                for (OrderItemDTO orderItem : orderItems) {
+
+                    int stockResult =
+                            orderItemDAO.decreaseProductStock(
+                                    connection,
+                                    orderItem.getProductCode(),
+                                    orderItem.getQuantity()
+                            );
+
+                    //상품이 없거나 현재 재고가 주문수량보다 부족하면
+                    //재고 차감 결과가 0이므로 결제 전체를 취소한다.
+                    if (stockResult != 1) {
+                        connection.rollback();
+                        return false;
+                    }
                 }
 
                 int pointUsed = 0;
@@ -266,6 +301,34 @@ public class PaymentService {
                 if (orderStatusResult != 1) {
                     connection.rollback();
                     return false;
+                }
+
+                // 취소할 결제의 주문 상품 목록 조회
+                List<OrderItemDTO> orderItems =
+                        orderItemDAO.findAllByOrderCode(
+                                connection,
+                                payment.getOrderCode()
+                        );
+
+                if (orderItems.isEmpty()) {
+                    connection.rollback();
+                    return false;
+                }
+
+                // 결제 취소 시 주문했던 수량만큼 재고 복구
+                for (OrderItemDTO orderItem : orderItems) {
+
+                    int stockResult =
+                            orderItemDAO.increaseProductStock(
+                                    connection,
+                                    orderItem.getProductCode(),
+                                    orderItem.getQuantity()
+                            );
+
+                    if (stockResult != 1) {
+                        connection.rollback();
+                        return false;
+                    }
                 }
 
                 connection.commit();
