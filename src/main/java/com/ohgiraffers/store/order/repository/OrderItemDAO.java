@@ -159,4 +159,55 @@ public class OrderItemDAO {
 
         return orderItems;
     }
+
+    // 결제 완료 시 주문한 수량만큼 상품 재고를 차감한다.
+    // 현재 재고가 주문수량보다 적으면 수정하지 않고 0을 반환한다.
+    public int decreaseProductStock(
+            Connection connection,
+            int productCode,
+            int quantity
+    ) throws SQLException {
+
+        String query = """
+            UPDATE tbl_product
+            SET stock_quantity =
+                    stock_quantity - ?
+            WHERE product_code = ?
+              AND stock_quantity >= ?
+            """;
+
+        try (PreparedStatement pstmt =
+                     connection.prepareStatement(query)) {
+
+            pstmt.setInt(1, quantity);
+            pstmt.setInt(2, productCode);
+            pstmt.setInt(3, quantity);
+
+            return pstmt.executeUpdate();
+        }
+    }
+
+    // 결제 취소 시 주문했던 수량만큼 상품 재고를 복구한다.
+    public int increaseProductStock(
+            Connection connection,
+            int productCode,
+            int quantity
+    ) throws SQLException {
+
+        String query = """
+            UPDATE tbl_product
+            SET stock_quantity =
+                    stock_quantity + ?
+            WHERE product_code = ?
+            """;
+
+        try (PreparedStatement pstmt =
+                     connection.prepareStatement(query)) {
+
+            pstmt.setInt(1, quantity);
+            pstmt.setInt(2, productCode);
+
+            return pstmt.executeUpdate();
+        }
+    }
 }
