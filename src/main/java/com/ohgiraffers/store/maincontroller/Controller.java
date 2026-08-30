@@ -133,28 +133,37 @@ public class Controller {
                             new MemberProductMenu(sc).run(
                                     loggedInMember.getMemberCode()
                             );
+
                     if (purchaseResult
                             == OrderView.REQUEST_PAYMENT) {
 
                         PaymentView paymentView = new PaymentView(sc);
 
-                        paymentView.checkout(loggedInMember.getMemberCode()
-                        );
-                    }
+                        boolean paymentCompleted = paymentView.checkout(loggedInMember.getMemberCode());
 
+                        if (paymentCompleted) {
+                            boolean returnToMemberMenu = paymentView.selectAfterPaymentMenu();
+
+                            if (!returnToMemberMenu) {
+                                return false;
+                            }
+                        }
+                    }
                     break;
                 }
+
                 case 2:
                     boolean withdrawn = memberView.MyMembership(loggedInMember);
 
                     if (withdrawn) {
                         return true;
                     }
-
                     break;
+
                 case 3:
                     System.out.println("프로그램을 종료합니다.");
                     return false;
+
                 default:
                     System.out.println("잘못입력하셨습니다. 다시 입력하세요.");
                     break;
