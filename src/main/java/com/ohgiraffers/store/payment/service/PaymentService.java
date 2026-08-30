@@ -2,6 +2,7 @@ package com.ohgiraffers.store.payment.service;
 
 import com.ohgiraffers.store.common.config.DBConnection;
 import com.ohgiraffers.store.member.service.MemberService;
+import com.ohgiraffers.store.order.repository.OrderDAO;
 import com.ohgiraffers.store.payment.model.PaymentDTO;
 import com.ohgiraffers.store.payment.repository.PaymentDAO;
 
@@ -13,10 +14,12 @@ public class PaymentService {
 
     private final PaymentDAO paymentDAO;
     private final MemberService memberService;
+    private final OrderDAO orderDAO;
 
     public PaymentService() {
         this.paymentDAO = new PaymentDAO();
         this.memberService = new MemberService();
+        this.orderDAO = new OrderDAO();
     }
 
     // 로그인한 회원의 전체 결제 내역 조회
@@ -95,22 +98,22 @@ public class PaymentService {
                 // 결제 등록 성공 여부 검증
                 int paymentResult = paymentDAO.insertPayment(connection, payment);
 
-                if(paymentResult != 1) {
+                if (paymentResult != 1) {
                     connection.rollback();
                     return false;
                 }
 
                 int pointUsed = 0;
 
-               // 포인트 실제 차감 결과 검증
-                if(payment.getPointUse() > 0){
+                // 포인트 실제 차감 결과 검증
+                if (payment.getPointUse() > 0) {
 
                     pointUsed = memberService.useAllPoint(connection, payment.getMemberCode(), payment.getPointUse());
 
-                if(pointUsed != payment.getPointUse()){
-                    connection.rollback();
-                    return false;
-                }
+                    if (pointUsed != payment.getPointUse()) {
+                        connection.rollback();
+                        return false;
+                    }
                 }
 
                 // 포인트 사용으로 총 결제 금액이 0원일 시 누적 금액 증가 및 포인트 적립 미처리
@@ -134,9 +137,23 @@ public class PaymentService {
                         return false;
                     }
                 }
-                    // 문제 없을 시 commit
-                    connection.commit();
-                    return true;
+
+                // 결제가 완료된 주문을 PENDING에서 PAID로 변경
+                int orderStatusResult =
+                        orderDAO.updateOrderStatusToPaid(
+                                connection,
+                                payment.getOrderCode(),
+                                payment.getMemberCode()
+                        );
+
+                if (orderStatusResult != 1) {
+                    connection.rollback();
+                    return false;
+                }
+
+                // 문제 없을 시 commit
+                connection.commit();
+                return true;
 
             } catch (SQLException | RuntimeException exception) {
                 connection.rollback();
@@ -164,7 +181,7 @@ public class PaymentService {
         }
 
         try (Connection connection =
-                DBConnection.getConnection()) {
+                     DBConnection.getConnection()) {
 
             connection.setAutoCommit(false);
 
@@ -231,6 +248,19 @@ public class PaymentService {
                 boolean earnedPointCanceled = memberService.cancelEarnedPoint(connection, memberCode, earnedPoint);
 
                 if (!earnedPointCanceled) {
+                    connection.rollback();
+                    return false;
+                }
+
+                // 결제가 취소된 주문을 PAID에서 CANCELED로 변경
+                int orderStatusResult =
+                        orderDAO.updateOrderStatusToCanceled(
+                                connection,
+                                payment.getOrderCode(),
+                                memberCode
+                        );
+
+                if (orderStatusResult != 1) {
                     connection.rollback();
                     return false;
                 }

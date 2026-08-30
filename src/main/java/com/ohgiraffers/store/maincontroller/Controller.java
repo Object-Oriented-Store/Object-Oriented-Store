@@ -10,6 +10,7 @@ import com.ohgiraffers.store.promotion.service.PromotionService;
 import com.ohgiraffers.store.promotion.service.SettingsOnlyManager;
 import com.ohgiraffers.store.order.view.OrderPurchaseView;
 import com.ohgiraffers.store.order.view.OrderView;
+import com.ohgiraffers.store.payment.view.PaymentView;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -135,10 +136,13 @@ public class Controller {
                     if (purchaseResult
                             == OrderView.REQUEST_PAYMENT) {
 
-                        System.out.println(
-                                "결제 화면 연결이 필요합니다."
+                        PaymentView paymentView =
+                                new PaymentView(sc);
+
+                        paymentView.checkout(loggedInMember.getMemberCode()
                         );
                     }
+
                     break;
                 }
                 case 2:

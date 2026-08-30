@@ -1,7 +1,11 @@
 package com.ohgiraffers.store.payment.view;
 
+import com.ohgiraffers.store.order.controller.OrderController;
+import com.ohgiraffers.store.order.model.OrderDTO;
 import com.ohgiraffers.store.payment.controller.PaymentController;
 import com.ohgiraffers.store.payment.model.PaymentDTO;
+import com.ohgiraffers.store.member.controller.MemberController;
+import com.ohgiraffers.store.member.model.MemberDTO;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -11,13 +15,242 @@ public class PaymentView {
 
     private final Scanner scanner;
     private final PaymentController paymentController;
+    private final OrderController orderController;
+    private final MemberController memberController;
 
     public PaymentView() {
         this.scanner = new Scanner(System.in);
-        this.paymentController = new PaymentController();
+        this.paymentController =
+                new PaymentController();
+        this.orderController =
+                new OrderController();
+        this.memberController =
+                new MemberController();
     }
 
-    // 로그인한 회원의 결제 메뉴 실행
+    // 주문 화면과 같은 Scanner를 사용하기 위한 생성자
+    public PaymentView(Scanner scanner) {
+
+        if (scanner == null) {
+            throw new IllegalArgumentException(
+                    "입력 도구가 필요합니다."
+            );
+        }
+
+        this.scanner = scanner;
+        this.paymentController =
+                new PaymentController();
+        this.orderController =
+                new OrderController();
+        this.memberController =
+                new MemberController();
+    }
+
+    // 주문 완료 후 신규 결제 진행
+    public boolean checkout(int memberCode) {
+
+        if (memberCode <= 0) {
+            System.out.println(
+                    "올바른 회원정보가 필요합니다."
+            );
+            return false;
+        }
+
+        // 로그인 회원의 결제 전 PENDING 주문 조회
+        OrderDTO pendingOrder =
+                orderController.findPendingOrder(
+                        memberCode
+                );
+
+        if (pendingOrder == null) {
+            System.out.println(
+                    "결제할 주문이 없습니다."
+            );
+            return false;
+        }
+
+        if (pendingOrder.getFinalAmount() <= 0) {
+            System.out.println(
+                    "결제할 주문 상품이 없습니다."
+            );
+            return false;
+        }
+
+        String paymentMethod =
+                selectPaymentMethod();
+
+        int pointUse = 0;
+
+        // 포인트 결제를 선택한 경우 로그인 회원의 보유 포인트 조회
+        if ("POINT".equals(paymentMethod)) {
+
+            MemberDTO lookupMember =
+                    new MemberDTO(
+                            memberCode,
+                            "",
+                            ""
+                    );
+
+            MemberDTO memberInfo =
+                    memberController.selectMember(
+                            lookupMember
+                    );
+            if (memberInfo == null) {
+                System.out.println(
+                        "회원 정보를 조회할 수 없습니다."
+                );
+                return false;
+            }
+
+            int pointBalance =
+                    memberInfo.getPointBalance();
+
+            if (pointBalance <= 0) {
+                System.out.println(
+                        "사용할 수 있는 포인트가 없습니다."
+                );
+                return false;
+            }
+
+            int paymentAmount =
+                    pendingOrder.getFinalAmount();
+
+            // 현재 구현에서는 포인트만으로 전액 결제할 수 있어야 한다.
+            if (pointBalance < paymentAmount) {
+                System.out.println(
+                        "보유 포인트가 결제금액보다 부족합니다."
+                );
+                System.out.println(
+                        "보유 포인트: "
+                                + pointBalance
+                                + "점"
+                );
+                System.out.println(
+                        "필요 포인트: "
+                                + paymentAmount
+                                + "점"
+                );
+                return false;
+            }
+
+            pointUse = paymentAmount;
+
+            System.out.println(
+                    "보유 포인트: "
+                            + pointBalance
+                            + "점"
+            );
+            System.out.println(
+                    "사용할 포인트: "
+                            + pointUse
+                            + "점"
+            );
+
+            if (!readYesOrNo(
+                    "포인트를 사용하여 전액 결제하시겠습니까? (Y/N): "
+            )) {
+                System.out.println(
+                        "포인트 결제를 취소했습니다."
+                );
+                return false;
+            }
+        }
+
+        int finalAmount =
+                pendingOrder.getFinalAmount()
+                        - pointUse;
+
+        PaymentDTO payment =
+                new PaymentDTO(
+                        pendingOrder.getOrderCode(),
+                        memberCode,
+                        paymentMethod,
+                        pendingOrder.getOriginalAmount(),
+                        pendingOrder.getDiscountAmount(),
+                        pointUse,
+                        finalAmount,
+                        "PENDING"
+                );
+
+        System.out.println();
+        System.out.println(
+                "========== 결제 정보 =========="
+        );
+        System.out.println(
+                "주문번호: "
+                        + pendingOrder.getOrderCode()
+        );
+        System.out.println(
+                "결제 방식: "
+                        + paymentMethod
+        );
+        System.out.println(
+                "할인 전 금액: "
+                        + pendingOrder.getOriginalAmount()
+                        + "원"
+        );
+        System.out.println(
+                "할인 금액: "
+                        + pendingOrder.getDiscountAmount()
+                        + "원"
+        );
+        System.out.println(
+                "사용 포인트: "
+                        + pointUse
+        );
+        System.out.println(
+                "최종 결제금액: "
+                        + finalAmount
+                        + "원"
+        );
+        System.out.println(
+                "=============================="
+        );
+
+        if (!readYesOrNo(
+                "결제를 진행하시겠습니까? (Y/N): "
+        )) {
+            System.out.println(
+                    "결제를 취소했습니다."
+            );
+            return false;
+        }
+
+        try {
+            boolean result =
+                    paymentController.registerPayment(
+                            payment
+                    );
+
+            if (result) {
+                System.out.println(
+                        "결제가 완료되었습니다."
+                );
+                return true;
+            }
+
+            System.out.println(
+                    "결제 처리에 실패했습니다."
+            );
+            return false;
+
+        } catch (SQLException exception) {
+            System.out.println(
+                    "결제 처리 중 DB 오류가 발생했습니다: "
+                            + exception.getMessage()
+            );
+            return false;
+
+        } catch (IllegalArgumentException exception) {
+            System.out.println(
+                    "결제 정보가 올바르지 않습니다: "
+                            + exception.getMessage()
+            );
+            return false;
+        }
+    }
+
+    // 로그인한 회원의 결제 내역 메뉴 실행
     public void run(int memberCode) {
 
         if (memberCode <= 0) {
@@ -34,36 +267,60 @@ public class PaymentView {
                     readInt("메뉴를 선택하세요: ");
 
             switch (menuNumber) {
-                case 1 -> showAllPayments(memberCode);
-                case 2 -> showPaymentByPayCode(memberCode);
-                case 3 -> cancelPayment(memberCode);
+                case 1:
+                    showAllPayments(memberCode);
+                    break;
 
-                case 0 -> {
+                case 2:
+                    showPaymentByPayCode(memberCode);
+                    break;
+
+                case 3:
+                    cancelPayment(memberCode);
+                    break;
+
+                case 0:
                     System.out.println(
                             "이전 화면으로 돌아갑니다."
                     );
                     return;
-                }
 
-                default -> System.out.println(
-                        "목록에 있는 메뉴 번호를 입력해주세요."
-                );
+                default:
+                    System.out.println(
+                            "목록에 있는 메뉴 번호를 입력해주세요."
+                    );
             }
         }
     }
 
-    // 결제 메뉴 출력
+    // 결제 내역 메뉴 출력
     private void printPaymentMenu() {
 
         System.out.println();
-        System.out.println("========================================");
-        System.out.println("              결제 메뉴");
-        System.out.println("========================================");
-        System.out.println("1. 나의 전체 결제 내역 조회");
-        System.out.println("2. 결제 한 건 조회");
-        System.out.println("3. 결제 취소");
-        System.out.println("0. 이전 화면으로");
-        System.out.println("========================================");
+        System.out.println(
+                "========================================"
+        );
+        System.out.println(
+                "              결제 메뉴"
+        );
+        System.out.println(
+                "========================================"
+        );
+        System.out.println(
+                "1. 나의 전체 결제 내역 조회"
+        );
+        System.out.println(
+                "2. 결제 한 건 조회"
+        );
+        System.out.println(
+                "3. 결제 취소"
+        );
+        System.out.println(
+                "0. 이전 화면으로"
+        );
+        System.out.println(
+                "========================================"
+        );
     }
 
     // 로그인한 회원의 전체 결제 내역 출력
@@ -71,9 +328,10 @@ public class PaymentView {
 
         try {
             List<PaymentDTO> payments =
-                    paymentController.findAllPaymentsByMemberCode(
-                            memberCode
-                    );
+                    paymentController
+                            .findAllPaymentsByMemberCode(
+                                    memberCode
+                            );
 
             if (payments.isEmpty()) {
                 System.out.println(
@@ -83,7 +341,9 @@ public class PaymentView {
             }
 
             System.out.println();
-            System.out.println("========== 나의 결제 내역 ==========");
+            System.out.println(
+                    "========== 나의 결제 내역 =========="
+            );
 
             for (PaymentDTO payment : payments) {
                 printPayment(payment);
@@ -97,18 +357,23 @@ public class PaymentView {
         }
     }
 
-    // 결제번호로 본인의 결제 한 건 조회
-    private void showPaymentByPayCode(int memberCode) {
+    // 결제번호로 로그인한 회원의 결제 한 건 조회
+    private void showPaymentByPayCode(
+            int memberCode
+    ) {
 
         int payCode =
-                readInt("조회할 결제번호를 입력하세요: ");
+                readInt(
+                        "조회할 결제번호를 입력하세요: "
+                );
 
         try {
             PaymentDTO payment =
-                    paymentController.findPaymentByPayCode(
-                            memberCode,
-                            payCode
-                    );
+                    paymentController
+                            .findPaymentByPayCode(
+                                    memberCode,
+                                    payCode
+                            );
 
             if (payment == null) {
                 System.out.println(
@@ -118,7 +383,9 @@ public class PaymentView {
             }
 
             System.out.println();
-            System.out.println("========== 결제 상세 ==========");
+            System.out.println(
+                    "========== 결제 상세 =========="
+            );
 
             printPayment(payment);
 
@@ -134,14 +401,17 @@ public class PaymentView {
     private void cancelPayment(int memberCode) {
 
         int payCode =
-                readInt("취소할 결제번호를 입력하세요: ");
+                readInt(
+                        "취소할 결제번호를 입력하세요: "
+                );
 
         try {
             PaymentDTO payment =
-                    paymentController.findPaymentByPayCode(
-                            memberCode,
-                            payCode
-                    );
+                    paymentController
+                            .findPaymentByPayCode(
+                                    memberCode,
+                                    payCode
+                            );
 
             if (payment == null) {
                 System.out.println(
@@ -160,7 +430,10 @@ public class PaymentView {
             }
 
             System.out.println();
-            System.out.println("========== 취소할 결제 ==========");
+            System.out.println(
+                    "========== 취소할 결제 =========="
+            );
+
             printPayment(payment);
 
             if (!readYesOrNo(
@@ -196,12 +469,65 @@ public class PaymentView {
         }
     }
 
+    // 결제 방식 선택
+    private String selectPaymentMethod() {
+
+        while (true) {
+            System.out.println();
+            System.out.println(
+                    "========== 결제 방식 =========="
+            );
+            System.out.println(
+                    "1. 카드"
+            );
+            System.out.println(
+                    "2. 카카오페이"
+            );
+            System.out.println(
+                    "3. 휴대폰 결제"
+            );
+            System.out.println(
+                    "4. 포인트 결제"
+            );
+            System.out.println(
+                    "=============================="
+            );
+
+            int menuNumber =
+                    readInt(
+                            "결제 방식을 선택하세요: "
+                    );
+
+            switch (menuNumber) {
+                case 1:
+                    return "CARD";
+
+                case 2:
+                    return "KAKAO_PAY";
+
+                case 3:
+                    return "MOBILE";
+
+                case 4:
+                    return "POINT";
+
+                default:
+                    System.out.println(
+                            "1~4 사이의 숫자를 입력해주세요."
+                    );
+            }
+        }
+    }
+
     // 결제 정보 한 건 출력
-    private void printPayment(PaymentDTO payment) {
+    private void printPayment(
+            PaymentDTO payment
+    ) {
 
         System.out.printf(
-                "결제번호=%d | 주문번호=%d | 결제방식=%s | "
-                        + "할인 전=%d원 | 할인=%d원 | 사용 포인트=%d | "
+                "결제번호=%d | 주문번호=%d | "
+                        + "결제방식=%s | 할인 전=%d원 | "
+                        + "할인=%d원 | 사용 포인트=%d | "
                         + "최종 결제금액=%d원 | 상태=%s%n",
                 payment.getPayCode(),
                 payment.getOrderCode(),
@@ -215,7 +541,9 @@ public class PaymentView {
     }
 
     // Y 또는 N 입력
-    private boolean readYesOrNo(String message) {
+    private boolean readYesOrNo(
+            String message
+    ) {
 
         while (true) {
             System.out.print(message);
@@ -238,12 +566,15 @@ public class PaymentView {
     }
 
     // 숫자 입력
-    private int readInt(String message) {
+    private int readInt(
+            String message
+    ) {
 
         while (true) {
             System.out.print(message);
 
-            String input = scanner.nextLine().trim();
+            String input =
+                    scanner.nextLine().trim();
 
             try {
                 return Integer.parseInt(input);
