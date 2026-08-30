@@ -121,6 +121,31 @@ ON DUPLICATE KEY UPDATE
     `point_balance` = VALUES(`point_balance`),
     `total_amount` = VALUES(`total_amount`);
 
+-- 관리자 화면 분기 확인에 사용하는 개발용 관리자 계정
+-- member_code는 AUTO_INCREMENT에 맡기고 login_id의 UNIQUE 제약으로 중복을 방지합니다.
+INSERT INTO `tbl_member` (
+    `grade_code`,
+    `login_id`,
+    `password`,
+    `nickname`,
+    `phone`,
+    `point_balance`,
+    `total_amount`
+) VALUES (
+    1,
+    'admin',
+    'admin1234',
+    '관리자',
+    99999999,
+    0,
+    0
+)
+ON DUPLICATE KEY UPDATE
+    `grade_code` = VALUES(`grade_code`),
+    `password` = VALUES(`password`),
+    `nickname` = VALUES(`nickname`),
+    `phone` = VALUES(`phone`);
+
 -- 테스트 주문
 -- 주문번호는 팀 규칙인 월일시분초(MMddHHmmss) 형식의 INT 값입니다.
 INSERT INTO `tbl_order` (

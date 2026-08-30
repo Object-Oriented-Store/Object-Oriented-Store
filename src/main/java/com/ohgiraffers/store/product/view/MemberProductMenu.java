@@ -267,22 +267,78 @@ public class MemberProductMenu {
             return;
         }
 
-        System.out.println("조회된 상품 수: " + products.size());
+        String border = "=".repeat(80);
+        String separator = "-".repeat(80);
+
+        System.out.println(border);
+        System.out.println(
+                padLeft("코드", 4) + "  "
+                        + padRight("상품명", 28) + "  "
+                        + padLeft("가격", 12) + "  "
+                        + padRight("상태", 8) + "  "
+                        + padLeft("재고", 8) + "  "
+                        + padLeft("카테고리", 10)
+        );
+        System.out.println(separator);
+
         for (ProductDTO product : products) {
             printProduct(product);
         }
+
+        System.out.println(border);
+        System.out.printf("총 %,d개의 상품이 조회되었습니다.%n", products.size());
     }
 
     private void printProduct(ProductDTO product) {
-        System.out.printf(
-                "상품코드=%d | 상품명=%s | 가격=%d원 | 상태=%s | 재고=%d개 | 카테고리=%d%n",
-                product.getProductCode(),
-                product.getProductName(),
-                product.getProductPrice(),
-                product.getProductStatus(),
-                product.getStockQuantity(),
-                product.getCategoryCode()
+        String price = String.format("%,d원", product.getProductPrice());
+        String status = "Y".equalsIgnoreCase(product.getProductStatus())
+                ? "판매중"
+                : "품절";
+        String stock = String.format("%,d개", product.getStockQuantity());
+
+        System.out.println(
+                padLeft(String.valueOf(product.getProductCode()), 4) + "  "
+                        + padRight(product.getProductName(), 28) + "  "
+                        + padLeft(price, 12) + "  "
+                        + padRight(status, 8) + "  "
+                        + padLeft(stock, 8) + "  "
+                        + padLeft(String.valueOf(product.getCategoryCode()), 10)
         );
+    }
+
+    /** 한글처럼 콘솔에서 두 칸을 차지하는 글자를 고려해 오른쪽을 공백으로 채운다. */
+    private String padRight(String value, int targetWidth) {
+        int padding = Math.max(0, targetWidth - displayWidth(value));
+        return value + " ".repeat(padding);
+    }
+
+    /** 한글처럼 콘솔에서 두 칸을 차지하는 글자를 고려해 왼쪽을 공백으로 채운다. */
+    private String padLeft(String value, int targetWidth) {
+        int padding = Math.max(0, targetWidth - displayWidth(value));
+        return " ".repeat(padding) + value;
+    }
+
+    /** 현재 프로젝트에서 사용하는 한글·한자·전각문자는 두 칸, 나머지는 한 칸으로 계산한다. */
+    private int displayWidth(String value) {
+        int width = 0;
+
+        for (int index = 0; index < value.length(); ) {
+            int codePoint = value.codePointAt(index);
+            width += isWideCharacter(codePoint) ? 2 : 1;
+            index += Character.charCount(codePoint);
+        }
+
+        return width;
+    }
+
+    private boolean isWideCharacter(int codePoint) {
+        return (codePoint >= 0x1100 && codePoint <= 0x115F)
+                || (codePoint >= 0x2E80 && codePoint <= 0xA4CF)
+                || (codePoint >= 0xAC00 && codePoint <= 0xD7A3)
+                || (codePoint >= 0xF900 && codePoint <= 0xFAFF)
+                || (codePoint >= 0xFE10 && codePoint <= 0xFE19)
+                || (codePoint >= 0xFF01 && codePoint <= 0xFF60)
+                || (codePoint >= 0xFFE0 && codePoint <= 0xFFE6);
     }
 
     /** 실제 주문 기능이 연결되기 전까지 화면에서만 유지하는 장바구니 항목이다. */

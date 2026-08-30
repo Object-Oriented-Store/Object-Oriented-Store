@@ -75,7 +75,7 @@ public class ProductMenu {
         System.out.println("4. 상품명 검색");
         System.out.println("5. 판매 상품 등록");
         System.out.println("6. 판매 상품 수정");
-        System.out.println("7. 행사 관리");
+
         System.out.println("0. 종료");
         System.out.println("========================================");
     }

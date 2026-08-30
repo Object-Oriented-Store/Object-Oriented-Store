@@ -1,32 +1,27 @@
 package com.ohgiraffers.store.maincontroller;
 
-//import com.ohgiraffers.store.promotion.repository.Membership;
 import com.ohgiraffers.store.member.model.MemberDTO;
-import com.ohgiraffers.store.member.model.Membership;
-import com.ohgiraffers.store.promotion.controller.PromotionRun;
-import com.ohgiraffers.store.promotion.service.SettingsOnlyManager;
 
 import java.util.Scanner;
 
 public class MainRun {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-        //각 클래스에 스캐너 전달
-        SettingsOnlyManager settingsOnlyManager = new SettingsOnlyManager(sc);
-        PromotionRun promotionRun = new PromotionRun(sc);
-        Membership membership = new Membership(sc);
-        Controller cl =  new Controller(sc);
-        MemberDTO user = cl.Start();//시작화면 메소드 호출
+        Controller controller = new Controller(sc);
 
-        String userName = user.getNickname();
+        // 로그인 또는 회원가입 결과를 한 번만 받는다.
+        MemberDTO loggedInMember = controller.Start();
 
-        if(userName != "관리자"){
-            cl.SelectCategory(userName);
+        // 프로그램 종료를 선택했다면 실행을 끝낸다.
+        if (loggedInMember == null) {
+            return;
         }
-        else {
 
+        // 관리자 계정과 일반회원 계정의 시작 화면을 구분한다.
+        if ("admin".equals(loggedInMember.getLoginId())) {
+            controller.startManager();
+        } else {
+            controller.startMember(loggedInMember);
         }
-        MemberDTO loggedInMember = cl.Start(); //시작화면 메소드 호출
-        cl.startMember(loggedInMember);
     }
 }
