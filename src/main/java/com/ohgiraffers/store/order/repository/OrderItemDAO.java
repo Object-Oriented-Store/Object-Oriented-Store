@@ -4,7 +4,10 @@ import com.ohgiraffers.store.order.model.OrderItemDTO;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OrderItemDAO {
 
@@ -113,5 +116,47 @@ public class OrderItemDAO {
         }
 
         return result;
+    }
+
+    // 주문에 담긴 상품 전체 조회
+    public List<OrderItemDTO> findAllByOrderCode(
+            Connection connection,
+            int orderCode
+    ) throws SQLException {
+
+        String query = """
+            SELECT
+                order_code,
+                product_code,
+                quantity
+            FROM tbl_order_item
+            WHERE order_code = ?
+            ORDER BY product_code
+            """;
+
+        List<OrderItemDTO> orderItems =
+                new ArrayList<>();
+
+        try (PreparedStatement pstmt =
+                     connection.prepareStatement(query)) {
+
+            pstmt.setInt(1, orderCode);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+
+                while (rs.next()) {
+                    OrderItemDTO orderItem =
+                            new OrderItemDTO(
+                                    rs.getInt("order_code"),
+                                    rs.getInt("product_code"),
+                                    rs.getInt("quantity")
+                            );
+
+                    orderItems.add(orderItem);
+                }
+            }
+        }
+
+        return orderItems;
     }
 }
