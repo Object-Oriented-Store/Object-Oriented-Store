@@ -2,13 +2,13 @@ package com.ohgiraffers.store.product.view;
 
 import com.ohgiraffers.store.category.controller.CategoryController;
 import com.ohgiraffers.store.category.model.CategoryDTO;
+import com.ohgiraffers.store.order.view.OrderPurchaseView;
+import com.ohgiraffers.store.order.view.OrderView;
 import com.ohgiraffers.store.product.controller.ProductController;
 import com.ohgiraffers.store.product.model.ProductDTO;
 
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 
 /**
@@ -22,37 +22,53 @@ public class MemberProductMenu {
     private final Scanner scanner;
     private final ProductController productController;
     private final CategoryController categoryController;
+    private final OrderPurchaseView orderPurchaseView;
 
-    /* 실제 주문 기능이 연결되기 전까지 선택한 상품을 메모리에 보관한다. */
-    private final Map<Integer, CartItem> cart;
+    public MemberProductMenu(Scanner scanner) {
+        if (scanner == null) {
+            throw new IllegalArgumentException("입력 도구가 필요합니다.");
+        }
 
-    public MemberProductMenu() {
-        this.scanner = new Scanner(System.in);
+        this.scanner = scanner;
         this.productController = new ProductController();
         this.categoryController = new CategoryController();
-        this.cart = new LinkedHashMap<>();
+        this.orderPurchaseView = new OrderPurchaseView(scanner);
     }
 
-    /** 로그인 기능이 완성되기 전 이 화면만 직접 실행할 수 있는 시작점이다. */
-    public static void main(String[] args) {
-        new MemberProductMenu().run();
-    }
+    /** 로그인 회원이 상품을 조회하고 선택한 뒤 주문 화면으로 이동한다. */
+    public int run(int memberCode) {
+        if (memberCode <= 0) {
+            System.out.println("올바른 회원정보가 필요합니다.");
+            return OrderView.EXIT_PURCHASE;
+        }
 
-    public void run() {
         while (true) {
             printMainMenu();
             int menuNumber = readInt("메뉴를 선택하세요: ");
 
             try {
+                int purchaseResult;
+
                 switch (menuNumber) {
-                    case 1 -> showAllProducts();
-                    case 2 -> showProductsByCategory();
-                    case 3 -> searchProductsByName();
+                    case 1 -> purchaseResult = showAllProducts(memberCode);
+                    case 2 -> purchaseResult = showProductsByCategory(memberCode);
+                    case 3 -> purchaseResult = searchProductsByName(memberCode);
                     case 0 -> {
                         System.out.println("상품 조회를 종료합니다.");
-                        return;
+                        return OrderView.EXIT_PURCHASE;
                     }
-                    default -> System.out.println("목록에 있는 메뉴 번호를 입력하세요.");
+                    default -> {
+                        System.out.println("목록에 있는 메뉴 번호를 입력하세요.");
+                        continue;
+                    }
+                }
+
+                if (purchaseResult == OrderView.REQUEST_PAYMENT) {
+                    return OrderView.REQUEST_PAYMENT;
+                }
+
+                if (purchaseResult == OrderView.EXIT_PURCHASE) {
+                    return OrderView.EXIT_PURCHASE;
                 }
             } catch (IllegalArgumentException exception) {
                 System.out.println("입력 오류: " + exception.getMessage());
@@ -75,31 +91,31 @@ public class MemberProductMenu {
         System.out.println("========================================");
     }
 
-    private void showAllProducts() throws SQLException {
+    private int showAllProducts(int memberCode) throws SQLException {
         List<ProductDTO> products = productController.findAllProducts();
         printProducts(products);
-        offerPurchase(products);
+        return offerPurchase(memberCode, products);
     }
 
-    private void showProductsByCategory() throws SQLException {
+    private int showProductsByCategory(int memberCode) throws SQLException {
         printCategories();
         int categoryCode = readInt("조회할 카테고리코드: ");
         List<ProductDTO> products = productController.findProductsByCategory(categoryCode);
         printProducts(products);
-        offerPurchase(products);
+        return offerPurchase(memberCode, products);
     }
 
-    private void searchProductsByName() throws SQLException {
+    private int searchProductsByName(int memberCode) throws SQLException {
         String keyword = readText("검색할 상품명: ");
         List<ProductDTO> products = productController.searchProductsByName(keyword);
         printProducts(products);
-        offerPurchase(products);
+        return offerPurchase(memberCode, products);
     }
 
-    /** 조회 결과에서 상품 하나를 골라 임시 장바구니에 담는다. */
-    private void offerPurchase(List<ProductDTO> products) throws SQLException {
+    /** 조회 결과에서 상품을 고른 뒤 실제 장바구니 처리는 주문 담당 코드에 맡긴다. */
+    private int offerPurchase(int memberCode, List<ProductDTO> products) {
         if (products.isEmpty()) {
-            return;
+            return OrderView.ADD_MORE_PRODUCT;
         }
 
         int productCode = readInt(
@@ -108,45 +124,17 @@ public class MemberProductMenu {
 
         if (productCode == 0) {
             System.out.println("상품을 구매하지 않고 메뉴로 돌아갑니다.");
-            return;
+            return OrderView.ADD_MORE_PRODUCT;
         }
 
         ProductDTO selectedProduct = findProduct(products, productCode);
 
         if (selectedProduct == null) {
             System.out.println("현재 조회 결과에 없는 상품코드입니다.");
-            return;
+            return OrderView.ADD_MORE_PRODUCT;
         }
 
-        int quantity = readInt("구매수량: ");
-        CartItem currentItem = cart.get(productCode);
-        int totalQuantity = quantity;
-
-        /* 이미 담긴 상품이면 기존 수량과 새 수량을 합쳐 재고를 검사한다. */
-        if (currentItem != null) {
-            totalQuantity += currentItem.quantity;
-        }
-
-        try {
-            ProductDTO validatedProduct = productController.validateProductPurchase(
-                    productCode,
-                    totalQuantity
-            );
-
-            cart.put(productCode, new CartItem(validatedProduct, totalQuantity));
-            System.out.println(validatedProduct.getProductName()
-                    + " " + quantity + "개를 장바구니에 담았습니다.");
-        } catch (IllegalStateException exception) {
-            System.out.println("구매 실패: " + exception.getMessage());
-            return;
-        }
-
-        if (readYesOrNo("더 구매하시겠습니까? (Y/N): ")) {
-            System.out.println("상품을 더 조회한 후 장바구니에 추가하세요.");
-            return;
-        }
-
-        checkout();
+        return orderPurchaseView.run(memberCode, selectedProduct);
     }
 
     private ProductDTO findProduct(List<ProductDTO> products, int productCode) {
@@ -157,61 +145,6 @@ public class MemberProductMenu {
         }
 
         return null;
-    }
-
-    /** 장바구니를 출력하고 모든 상품을 다시 검사한 뒤 최종 구매 여부를 확인한다. */
-    private void checkout() throws SQLException {
-        if (cart.isEmpty()) {
-            System.out.println("장바구니가 비어 있습니다.");
-            return;
-        }
-
-        printCart();
-
-        if (!readYesOrNo("최종 구매하시겠습니까? (Y/N): ")) {
-            System.out.println("구매를 보류했습니다. 장바구니는 유지됩니다.");
-            return;
-        }
-
-        long totalAmount = 0;
-
-        try {
-            /* 장바구니에 담은 뒤 상태나 재고가 바뀌었을 수 있어 마지막으로 다시 검사한다. */
-            for (CartItem cartItem : cart.values()) {
-                ProductDTO currentProduct = productController.validateProductPurchase(
-                        cartItem.product.getProductCode(),
-                        cartItem.quantity
-                );
-                cartItem.product = currentProduct;
-                totalAmount += (long) currentProduct.getProductPrice() * cartItem.quantity;
-            }
-        } catch (IllegalStateException exception) {
-            System.out.println("최종 구매 실패: " + exception.getMessage());
-            return;
-        }
-
-        System.out.println("최종 구매 요청 준비 완료");
-        System.out.println("상품 총액: " + totalAmount + "원");
-        System.out.println("※ OrderController 연결 후 주문과 재고 감소가 DB에 반영됩니다.");
-    }
-
-    private void printCart() {
-        System.out.println("[장바구니]");
-        long totalAmount = 0;
-
-        for (CartItem cartItem : cart.values()) {
-            long itemAmount = (long) cartItem.product.getProductPrice() * cartItem.quantity;
-            totalAmount += itemAmount;
-
-            System.out.printf(
-                    "%s | %d개 | %d원%n",
-                    cartItem.product.getProductName(),
-                    cartItem.quantity,
-                    itemAmount
-            );
-        }
-
-        System.out.println("예상 상품 총액: " + totalAmount + "원");
     }
 
     private void printCategories() throws SQLException {
@@ -243,22 +176,6 @@ public class MemberProductMenu {
     private String readText(String message) {
         System.out.print(message);
         return scanner.nextLine();
-    }
-
-    private boolean readYesOrNo(String message) {
-        while (true) {
-            String answer = readText(message).trim();
-
-            if ("Y".equalsIgnoreCase(answer)) {
-                return true;
-            }
-
-            if ("N".equalsIgnoreCase(answer)) {
-                return false;
-            }
-
-            System.out.println("Y 또는 N으로 입력하세요.");
-        }
     }
 
     private void printProducts(List<ProductDTO> products) {
@@ -341,15 +258,4 @@ public class MemberProductMenu {
                 || (codePoint >= 0xFFE0 && codePoint <= 0xFFE6);
     }
 
-    /** 실제 주문 기능이 연결되기 전까지 화면에서만 유지하는 장바구니 항목이다. */
-    private static final class CartItem {
-
-        private ProductDTO product;
-        private final int quantity;
-
-        private CartItem(ProductDTO product, int quantity) {
-            this.product = product;
-            this.quantity = quantity;
-        }
-    }
 }

@@ -4,11 +4,11 @@ import com.ohgiraffers.store.member.model.MemberDTO;
 import com.ohgiraffers.store.member.model.Membership;
 import com.ohgiraffers.store.member.service.MemberService;
 import com.ohgiraffers.store.member.view.MemberView;
+import com.ohgiraffers.store.product.view.MemberProductMenu;
 import com.ohgiraffers.store.product.view.ProductMenu;
 import com.ohgiraffers.store.promotion.model.PromotionDAO;
 import com.ohgiraffers.store.promotion.service.PromotionService;
 import com.ohgiraffers.store.promotion.service.SettingsOnlyManager;
-import com.ohgiraffers.store.order.view.OrderPurchaseView;
 import com.ohgiraffers.store.order.view.OrderView;
 import com.ohgiraffers.store.payment.view.PaymentView;
 
@@ -130,7 +130,7 @@ public class Controller {
             switch (choice2) {
                 case 1: {
                     int purchaseResult =
-                            new OrderPurchaseView(sc).run(
+                            new MemberProductMenu(sc).run(
                                     loggedInMember.getMemberCode()
                             );
                     if (purchaseResult
