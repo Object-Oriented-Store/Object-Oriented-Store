@@ -21,6 +21,25 @@ public class PromotionDAO {
         }
     }
 
+    // 숫자가 아닌 입력으로 프로그램이 종료되지 않도록 정수 입력을 반복 처리
+    private int inputNumber(Scanner sc, String prompt) {
+
+        while (true) {
+            System.out.print(prompt);
+
+            // 한 줄 전체 입력 후 앞뒤 공백 제거
+            String input = sc.nextLine().trim();
+
+            try {
+                // 문자열을 int로 변환
+                return Integer.parseInt(input);
+
+            } catch (NumberFormatException e) {
+                System.out.println("숫자만 입력해주세요.");
+            }
+        }
+    }
+
     public void updatePromotion(Connection conn, int wc, PromotionDTO pd) {
         String sql = prop.getProperty("UpdatePromotion");
         System.out.println("===================================");
@@ -84,8 +103,7 @@ public class PromotionDAO {
                 }
                 System.out.println("=================================");
                 System.out.println("위 행사를 삭제하시겠습니까? ");
-                System.out.print("삭제를 원하시면 1, 아니라면 0을 입력하세요: ");
-                int yesOrNot = sc.nextInt();
+                int yesOrNot = inputNumber(sc, "삭제를 원하시면 1, 아니라면 0을 입력하세요 : ");
                 if (yesOrNot == 1) deletePromotion(conn, wc);
                 else st.startManager();
             } catch (SQLException e) {

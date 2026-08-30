@@ -42,6 +42,26 @@ public class Controller {
 
     }
 
+    // 숫자가 아닌 입력으로 프로그램이 종료되지 않도록 정수 입력을 반복 처리
+    private int inputNumber(String prompt) {
+
+        while (true) {
+            System.out.print(prompt);
+
+            // 한 줄 전체 입력 후 앞뒤 공백 제거
+            String input = sc.nextLine().trim();
+
+            try {
+                // 문자열을 int로 변환
+                return Integer.parseInt(input);
+
+            } catch (NumberFormatException e) {
+                System.out.println("숫자만 입력해주세요.");
+            }
+        }
+    }
+
+
     // 프로그램 실행 첫 화면
     public MemberDTO Start() {
 
@@ -53,8 +73,9 @@ public class Controller {
             System.out.println("1. 로그인");
             System.out.println("2. 회원가입");
             System.out.println("3. 프로그램 종료");
-            System.out.print("메뉴를 선택해 주세요: ");
-            int choice1 = sc.nextInt();
+
+            int choice1 = inputNumber("메뉴를 정수로 입력하세요 : ");
+
             switch (choice1) {
                 case 1:
                     loggedInMember = mb.logIn();
@@ -102,9 +123,8 @@ public class Controller {
             System.out.println("2. My Membership");
             System.out.println("3. 프로그램 종료");
             System.out.println("======================================");
-            System.out.print("메뉴를 정수로 입력하세요: ");
-            int choice2 = sc.nextInt();
-            sc.nextLine();
+
+            int choice2 = inputNumber("메뉴를 정수로 입력하세요 : ");
 
             switch (choice2) {
                 case 1: {
@@ -153,8 +173,8 @@ public class Controller {
         System.out.println("9. 주류");
         System.out.println("10. 담배");
         System.out.println("====================================");
-        System.out.print("메뉴를 정수로 입력하세요: ");
-        int choice3 = sc.nextInt();
+
+        int choice3 = inputNumber("메뉴를 정수로 입력하세요 : ");
 
         String sql = prop.getProperty("selectCategory");
         try (Connection conn = DriverManager.getConnection(
@@ -194,14 +214,15 @@ public class Controller {
         System.out.println("5. 판매 상품 관리");
         System.out.println("6. 메인 화면으로 이동");
         System.out.println("======================================");
-        System.out.println("메뉴를 정수로 입력하세요: ");
-        int choice4 = sc.nextInt();
-        sc.nextLine();
+
+        int choice4 = inputNumber("메뉴를 정수로 입력하세요 : ");
+
         switch (choice4) {
             case 1:
                 som.RegisterPromotion();
                 startManager();
                 break;
+
             case 2:
                 try {
                     som.UpdatePromotion();
@@ -210,10 +231,12 @@ public class Controller {
                 }
                 startManager();
                 break;
+
             case 3:
                 som.DeletePromotion();
                 startManager();
                 break;
+
             case 4:
                 try {
                     som.RegisterPromotionProduct();
@@ -222,18 +245,20 @@ public class Controller {
                 }
                 startManager();
                 break;
+
             case 5:
                 pm.run();
                 startManager();
                 break;
+
             case 6:
                 Start();
                 break;
+
             default:
                 System.out.println("잘못입력하셨습니다. 다시 입력하세요.");
                 startManager();
                 break;
         }
-
     }
 }
