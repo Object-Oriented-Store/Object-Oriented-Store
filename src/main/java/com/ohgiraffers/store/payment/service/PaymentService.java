@@ -116,23 +116,23 @@ public class PaymentService {
                     }
                 }
 
-                // 포인트 사용으로 총 결제 금액이 0원일 시 누적 금액 증가 및 포인트 적립 미처리
+                // 실제 결제금액이 있을 때만 처리
                 if (payment.getFinalAmount() > 0) {
 
-                    // 누적 금액 증가 및 등급 변경 성공 여부 검증
-                    boolean amountUpdated = memberService.plusTotalAmount(
-                            connection, payment.getMemberCode(), payment.getFinalAmount());
-
-                    if (!amountUpdated) {
-                        connection.rollback();
-                        return false;
-                    }
-
-                    // 포인트 적립 여부 검증
+                    // 결제 전 등급을 기준으로 포인트 적립
                     boolean pointEarned = memberService.earnPoint(
                             connection, payment.getMemberCode(), payment.getFinalAmount());
 
                     if (!pointEarned) {
+                        connection.rollback();
+                        return false;
+                    }
+
+                    // 포인트 적립 후 누적금액 증가 및 등급 재계산
+                    boolean amountUpdated = memberService.plusTotalAmount(
+                            connection, payment.getMemberCode(), payment.getFinalAmount());
+
+                    if (!amountUpdated) {
                         connection.rollback();
                         return false;
                     }
@@ -221,8 +221,8 @@ public class PaymentService {
                     return false;
                 }
 
-                // 취소 전에 결제 당시 적립된 포인트 계산
-                int earnedPoint = memberService.calculateEarnedPoint(connection, memberCode, payment.getFinalAmount());
+                // 취소할 적립 포인트를 저장할 변수
+                int earnedPoint = 0;
 
                 // 실제 결제금액이 있을 시 누적 구매금액 차감
                 if (payment.getFinalAmount() > 0) {
@@ -243,6 +243,9 @@ public class PaymentService {
                     connection.rollback();
                     return false;
                 }
+
+                // 누적금액 차감 후 결제 이전 등급을 기준으로 적립 포인트 계산
+                earnedPoint = memberService.calculateEarnedPoint(connection, memberCode, payment.getFinalAmount());
 
                 // 결제로 적립됐던 포인트 회수
                 boolean earnedPointCanceled = memberService.cancelEarnedPoint(connection, memberCode, earnedPoint);
