@@ -16,8 +16,6 @@ public class Membership<SqlSession> {
 
     public MemberDTO logIn() {
 
-        sc.nextLine();
-
         while (true) {
             System.out.println("==============로그인==============");
 
