@@ -13,6 +13,23 @@ public class MemberService {
     private final MembershipGradeDAO memberGradeDAO = new MembershipGradeDAO();
     private final MemberDTO memberDTO = new MemberDTO();
 
+    // 회원가입 전 아이디 사용 가능 여부 확인
+    public boolean isLoginIdAvailable(String loginId) {
+
+        if (loginId == null || loginId.isBlank() || loginId.length() > 25) {
+
+            System.out.println("아이디를 올바르게 입력해주세요.");
+            return false;
+        }
+
+        if (memberDAO.isLoginIdDuplicate(loginId)) {
+            System.out.println("이미 사용 중인 아이디입니다.");
+            return false;
+        }
+
+        return true;
+    }
+
     // 회원 가입 검증
     public MemberDTO joinMember(MemberDTO member) {
 
@@ -23,26 +40,27 @@ public class MemberService {
             System.out.println("아이디를 입력해주세요.");
             return null;
         }
-        if (member.getPassword() == null || member.getPassword().isBlank()) {
-            System.out.println("비밀번호를 입력해주세요.");
-            return null;
-        }
-        if (member.getNickname() == null || member.getNickname().isBlank() || member.getNickname().length() > 25) {
-            System.out.println("닉네임을 입력해주세요.");
-            return null;
-        }
-        if (member.getPhone() < 0 || member.getPhone() > 99_999_999) {
-            System.out.println(
-                    "휴대폰 번호는 숫자 8자리로 입력해주세요.");
-            return null;
-        }
-
-        // 아이디 중복 검증으로  false일 시 회원가입 진행
         if (memberDAO.isLoginIdDuplicate(member.getLoginId())) {
             System.out.println("이미 사용중인 아이디입니다.");
             return null;
         }
 
+        if (member.getPassword() == null || member.getPassword().isBlank()) {
+            System.out.println("비밀번호를 입력해주세요.");
+            return null;
+        }
+
+        if (member.getNickname() == null || member.getNickname().isBlank() || member.getNickname().length() > 25) {
+            System.out.println("닉네임을 입력해주세요.");
+            return null;
+        }
+
+        if (member.getPhone() < 0 || member.getPhone() > 99_999_999) {
+            System.out.println(
+                    "휴대폰 번호는 숫자 8자리로 입력해주세요.");
+            return null;
+        }
+        // 멤버십 가입 정보 저장 및 가입 결과 반환
         int result = memberDAO.insertMember(member);
 
         if (result <= 0){
