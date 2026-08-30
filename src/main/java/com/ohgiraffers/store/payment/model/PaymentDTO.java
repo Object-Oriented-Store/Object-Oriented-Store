@@ -15,9 +15,40 @@ public class PaymentDTO {
     public PaymentDTO() {
     }
 
-    public PaymentDTO(int payCode, int orderCode, int memberCode, String paymentMethod, int originalAmount,
-                      int discountAmount, int pointUse, int finalAmount, String paymentStatus) {
+    // DB에서 조회한 결제 정보를 담을 때 사용
+    public PaymentDTO(
+            int payCode,
+            int orderCode,
+            int memberCode,
+            String paymentMethod,
+            int originalAmount,
+            int discountAmount,
+            int pointUse,
+            int finalAmount,
+            String paymentStatus
+    ) {
         this.payCode = payCode;
+        this.orderCode = orderCode;
+        this.memberCode = memberCode;
+        this.paymentMethod = paymentMethod;
+        this.originalAmount = originalAmount;
+        this.discountAmount = discountAmount;
+        this.pointUse = pointUse;
+        this.finalAmount = finalAmount;
+        this.paymentStatus = paymentStatus;
+    }
+
+    // 새로운 결제를 등록할 때 사용
+    public PaymentDTO(
+            int orderCode,
+            int memberCode,
+            String paymentMethod,
+            int originalAmount,
+            int discountAmount,
+            int pointUse,
+            int finalAmount,
+            String paymentStatus
+    ) {
         this.orderCode = orderCode;
         this.memberCode = memberCode;
         this.paymentMethod = paymentMethod;
