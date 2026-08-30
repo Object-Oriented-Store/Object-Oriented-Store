@@ -224,8 +224,9 @@ public class PaymentView {
 
             if (result) {
                 System.out.println(
-                        "결제가 완료되었습니다."
-                );
+                        "결제가 완료되었습니다.");
+
+                printPayment(payment);
                 return true;
             }
 
@@ -519,25 +520,57 @@ public class PaymentView {
         }
     }
 
-    // 결제 정보 한 건 출력
-    private void printPayment(
-            PaymentDTO payment
-    ) {
+    // 결제 완료 후 이동할 화면 선택
+    public boolean selectAfterPaymentMenu() {
 
-        System.out.printf(
-                "결제번호=%d | 주문번호=%d | "
-                        + "결제방식=%s | 할인 전=%d원 | "
-                        + "할인=%d원 | 사용 포인트=%d | "
-                        + "최종 결제금액=%d원 | 상태=%s%n",
-                payment.getPayCode(),
-                payment.getOrderCode(),
-                payment.getPaymentMethod(),
-                payment.getOriginalAmount(),
-                payment.getDiscountAmount(),
-                payment.getPointUse(),
-                payment.getFinalAmount(),
-                payment.getPaymentStatus()
-        );
+        while (true) {
+            System.out.println();
+            System.out.println("========================================");
+            System.out.println("          결제가 완료되었습니다.");
+            System.out.println("========================================");
+            System.out.println("1. 멤버십 초기화면으로");
+            System.out.println("2. 프로그램 종료");
+            System.out.println("----------------------------------------");
+
+            int menuNumber =
+                    readInt("메뉴를 선택하세요: ");
+
+            switch (menuNumber) {
+                case 1:
+                    System.out.println("멤버십 초기화면으로 이동합니다.");
+                    return true;
+
+                case 2:
+                    System.out.println("프로그램을 종료합니다.");
+                    return false;
+
+                default:
+                    System.out.println("1 또는 2를 입력해주세요.");
+            }
+        }
+    }
+
+    // 결제 정보 한 건 출력
+    private void printPayment(PaymentDTO payment) {
+
+        System.out.println();
+        System.out.println("========================================");
+        System.out.println("          OBJECT-ORIENTED STORE");
+        System.out.println("                 영수증");
+        System.out.println("========================================");
+        System.out.printf("결제 번호        : %d%n", payment.getPayCode());
+        System.out.printf("주문 번호        : %d%n", payment.getOrderCode());
+        System.out.printf("결제 방식        : %s%n", payment.getPaymentMethod());
+        System.out.println("----------------------------------------");
+        System.out.printf("상품 총액        : %,d원%n", payment.getOriginalAmount());
+        System.out.printf("할인 금액        : -%,d원%n", payment.getDiscountAmount());
+        System.out.printf("사용 포인트      : -%,dP%n", payment.getPointUse());
+        System.out.println("----------------------------------------");
+        System.out.printf("최종 결제 금액   : %,d원%n", payment.getFinalAmount());
+        System.out.printf("결제 상태        : %s%n", payment.getPaymentStatus());
+        System.out.println("========================================");
+        System.out.println("          이용해 주셔서 감사합니다.");
+        System.out.println("========================================");
     }
 
     // Y 또는 N 입력
