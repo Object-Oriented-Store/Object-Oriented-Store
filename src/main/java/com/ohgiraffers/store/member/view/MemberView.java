@@ -69,21 +69,20 @@ public class MemberView {
     }
 
     //My Membership 선택 시 보여지는 화면
-    public void MyMembership(MemberDTO loggedInMember) {
+    public boolean MyMembership(MemberDTO loggedInMember) {
 
         if (loggedInMember == null || loggedInMember.getMemberCode() <= 0){
             System.out.println("로그인 정보를 불러올 수 없습니다.");
-            return;
+            return false;
         }
 
-        while(isLoggedIn){
+        while(true){
             System.out.println("=============My Membership============");
             System.out.println("  1. 내 정보 조회");
             System.out.println("  2. 결제 내역 조회");
             System.out.println("  3. 멤버십 정보 수정");
             System.out.println("  4. 멤버십 탈퇴");
             System.out.println("  5. 메인 화면으로");
-            System.out.println("  6. 프로그램 종료");
             System.out.println("======================================");
 
             int menu = inputNumber("메뉴 번호를 입력해주세요 : ");
@@ -106,20 +105,13 @@ public class MemberView {
                     boolean withdrawn = withdrawMemberMenu(loggedInMember);
 
                     if(withdrawn){
-                        isLoggedIn = false;
-                        return;
+                       return true;
                     }
-
                     break;
 
                 case 5:
                     System.out.println("메인 화면으로 이동합니다.");
-                    return;
-
-                case 6:
-                    isLoggedIn = false;
-                    System.out.println("프로그램을 종료합니다.");
-                    return;
+                    return false;
 
                 default:
                     System.out.println("1~6 사이의 숫자를 입력해주세요.");
@@ -221,11 +213,9 @@ public class MemberView {
     public boolean withdrawMemberMenu(MemberDTO loggedInMember) {
         System.out.println();
         System.out.println("----------- 멤버십 탈퇴 -----------");
-        System.out.println("탈퇴 시 동일한 계정으로 이용할 수 없습니다.");
-        System.out.println("보유 포인트 및 총 누적 금액이 모두 소멸됩니다.");
-        System.out.println("탈퇴 하시겠습니까?");
-        System.out.println("1. 탈퇴");
-        System.out.println("2. 취소(뒤로가기)");
+        System.out.println("탈퇴 시 계정 이용 및 복구가 불가합니다.");
+        System.out.println("또한, 보유 포인트 및 총 누적 금액이 모두 소멸됩니다.");
+        System.out.println("정말 탈퇴 하시겠습니까? 1, 2");
 
         int number = inputNumber("메뉴 번호를 입력해주세요 : ");
 

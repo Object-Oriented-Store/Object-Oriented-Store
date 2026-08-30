@@ -230,6 +230,18 @@ public class MemberService {
         }
         return usedPoint;
     }
+
+    // 결제금액을 기준으로 적립 포인트 계산
+    public int calculateEarnedPoint(Connection con, int memberCode, int finalAmount) {
+        if (memberCode <= 0 || finalAmount <= 0) {
+            return 0;
+        }
+
+        int rewardRate = memberGradeDAO.selectRewardRate(con, memberCode);
+
+        return finalAmount * rewardRate / 100;
+    }
+
     // 결제 취소 시 지급된 포인트 회수
     public boolean cancelEarnedPoint(Connection con, int memberCode, int earnedPoint) {
         if (memberCode <= 0 || earnedPoint < 0) {
