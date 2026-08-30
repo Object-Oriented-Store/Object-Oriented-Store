@@ -1,6 +1,7 @@
 package com.ohgiraffers.store.payment.service;
 
 import com.ohgiraffers.store.common.config.DBConnection;
+import com.ohgiraffers.store.member.service.MemberService;
 import com.ohgiraffers.store.payment.model.PaymentDTO;
 import com.ohgiraffers.store.payment.repository.PaymentDAO;
 
@@ -11,9 +12,11 @@ import java.util.List;
 public class PaymentService {
 
     private final PaymentDAO paymentDAO;
+    private final MemberService memberService;
 
     public PaymentService() {
         this.paymentDAO = new PaymentDAO();
+        this.memberService = new MemberService();
     }
 
     // 로그인한 회원의 전체 결제 내역 조회
@@ -89,18 +92,39 @@ public class PaymentService {
             try {
                 payment.setPaymentStatus("COMPLETED");
 
-                int result =
-                        paymentDAO.insertPayment(
-                                connection, payment
-                        );
+                // 결제 등록 성공 여부 검증
+                int paymentResult = paymentDAO.insertPayment(connection, payment);
 
-                if (result == 1) {
-                    connection.commit();
-                    return true;
+                if(paymentResult != 1) {
+                    connection.rollback();
+                    return false;
                 }
 
-                connection.rollback();
-                return false;
+                // 포인트 사용 시 차감 검증
+                int pointUsed = 0;
+
+                if(payment.getPointUse())
+
+
+                // 누적 금액 증가 및 등급 변경 성공 여부 검증
+                boolean amountUpdated = memberService.plusTotalAmount(connection, payment.getMemberCode(), payment.getFinalAmount());
+
+                if (!amountUpdated) {
+                    connection.rollback();
+                    return false;
+                }
+
+                // 포인트 적립 여부 검증
+                boolean pointEarned = memberService.earnPoint(connection, payment.getMemberCode(), payment.getFinalAmount());
+
+                if (!pointEarned) {
+                    connection.rollback();
+                    return false;
+                }
+
+                // 문제 없을 시 commit
+                connection.commit();
+                return true;
 
             } catch (SQLException | RuntimeException exception) {
                 connection.rollback();

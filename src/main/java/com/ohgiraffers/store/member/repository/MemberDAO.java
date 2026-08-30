@@ -156,11 +156,10 @@ public class MemberDAO {
         }
     }
 
-    public int plusTotalAmount(int memberCode, int finalAmount) {
+    public int plusTotalAmount(Connection con, int  memberCode, int finalAmount) {
         String query = prop.getProperty("increaseTotalAmount");
 
-        try (Connection con = getConnection();
-             PreparedStatement pstmt = con.prepareStatement(query)) {
+        try (PreparedStatement pstmt = con.prepareStatement(query)) {
 
             pstmt.setInt(1, finalAmount);
             pstmt.setInt(2, memberCode);
@@ -172,11 +171,10 @@ public class MemberDAO {
         }
     }
 
-    public int minusTotalAmount(int memberCode, int previousAmount) {
+    public int minusTotalAmount(Connection con, int memberCode, int previousAmount) {
         String query = prop.getProperty("decreaseTotalAmount");
 
-        try (Connection con = getConnection();
-             PreparedStatement pstmt = con.prepareStatement(query)) {
+        try (PreparedStatement pstmt = con.prepareStatement(query)) {
 
             pstmt.setInt(1, previousAmount);
             pstmt.setInt(2, memberCode);
@@ -189,11 +187,10 @@ public class MemberDAO {
     }
 
     // 포인트 적립 및 반환
-    public int plusPointBalance(int memberCode, int pointAmount){
+    public int plusPointBalance(Connection con, int memberCode, int pointAmount){
         String query = prop.getProperty("increasePointBalance");
 
-        try (Connection con = getConnection();
-            PreparedStatement pstmt = con.prepareStatement(query)){
+        try (PreparedStatement pstmt = con.prepareStatement(query)){
 
             pstmt.setInt(1,pointAmount);
             pstmt.setInt(2,memberCode);
@@ -206,11 +203,10 @@ public class MemberDAO {
     }
 
     // 포인트 차감
-    public int minusPointBalance(int memberCode, int pointAmount){
+    public int minusPointBalance(Connection con, int memberCode, int pointAmount){
         String query = prop.getProperty("decreasePointBalance");
 
-        try (Connection con = getConnection();
-             PreparedStatement pstmt = con.prepareStatement(query)){
+        try (PreparedStatement pstmt = con.prepareStatement(query)){
 
             pstmt.setInt(1,pointAmount);
             pstmt.setInt(2,memberCode);
