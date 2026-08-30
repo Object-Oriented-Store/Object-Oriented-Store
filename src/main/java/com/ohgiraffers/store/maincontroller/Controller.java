@@ -84,12 +84,12 @@ public class Controller {
     }
 
     // 멤버십 회원 메인 화면
-    public void startMember(MemberDTO loggedInMember) {
+    public boolean startMember(MemberDTO loggedInMember) {
 
         if (loggedInMember == null
                 || loggedInMember.getMemberCode() <= 0) {
             System.out.println("로그인 정보가 없습니다.");
-            return;
+            return false;
         }
 
         String nickname = loggedInMember.getNickname();
@@ -122,11 +122,16 @@ public class Controller {
                     break;
                 }
                 case 2:
-                    memberView.MyMembership(loggedInMember);
+                    boolean withdrawn = memberView.MyMembership(loggedInMember);
+
+                    if (withdrawn) {
+                        return true;
+                    }
+
                     break;
                 case 3:
                     System.out.println("프로그램을 종료합니다.");
-                    return;
+                    return false;
                 default:
                     System.out.println("잘못입력하셨습니다. 다시 입력하세요.");
                     break;

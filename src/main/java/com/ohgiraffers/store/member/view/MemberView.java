@@ -36,10 +36,22 @@ public class MemberView {
     public MemberDTO joinMember(){
 
         System.out.println();
-        System.out.println(" -------------- 회원 가입 -------------");
+        System.out.println("========================================");
+        System.out.println("               회원가입");
+        System.out.println("========================================");
 
         System.out.print("아이디 : ");
         String loginId = sc.nextLine();
+
+        boolean available = memberController.isLoginIdAvailable(loginId);
+
+        if(!available){
+            System.out.println("메인 화면으로 이동합니다.");
+
+            return null;
+        }
+        System.out.println("사용 가능한 아이디입니다.");
+        System.out.println("----------------------------------------");
 
         System.out.print("비밀번호 : ");
         String password = sc.nextLine();
@@ -52,6 +64,7 @@ public class MemberView {
 
         if(!phone.matches("[0-9]{8}")){
             System.out.println("휴대폰 번호는 숫자 8자리로 입력해주세요.");
+            System.out.println("메인 화면으로 이동합니다.");
             return null;
         }
 
@@ -77,13 +90,16 @@ public class MemberView {
         }
 
         while(true){
-            System.out.println("=============My Membership============");
+            System.out.println();
+            System.out.println("========================================");
+            System.out.println("             MY MEMBERSHIP");
+            System.out.println("========================================");
             System.out.println("  1. 내 정보 조회");
             System.out.println("  2. 결제 내역 조회");
             System.out.println("  3. 멤버십 정보 수정");
             System.out.println("  4. 멤버십 탈퇴");
             System.out.println("  5. 메인 화면으로");
-            System.out.println("======================================");
+            System.out.println("----------------------------------------");
 
             int menu = inputNumber("메뉴 번호를 입력해주세요 : ");
 
@@ -114,7 +130,7 @@ public class MemberView {
                     return false;
 
                 default:
-                    System.out.println("1~6 사이의 숫자를 입력해주세요.");
+                    System.out.println("1~5 사이의 숫자를 입력해주세요.");
             }
         }
     }
@@ -134,7 +150,9 @@ public class MemberView {
         String gradeName = memberController.selectGradeName(memberinfo);
 
             System.out.println();
-            System.out.println("========== My 멤버십 상세 ==========");
+            System.out.println("========================================");
+            System.out.println("              멤버십 정보");
+            System.out.println("========================================");
             System.out.println(" 멤버십 등급 : " +  gradeName);
             System.out.println(" 아이디 : " +  memberinfo.getLoginId());
             System.out.println(" 비밀번호 : ********");
@@ -176,8 +194,11 @@ public class MemberView {
     public void modifyMemberMenu(MemberDTO loggedInMember) {
 
         System.out.println();
-        System.out.println("----------- 회원정보 수정 -----------");
-        System.out.println("※ 아이디는 수정할 수 없습니다.");
+        System.out.println("========================================");
+        System.out.println("             회원정보 수정");
+        System.out.println("========================================");
+        System.out.println("[안내] 아이디는 수정할 수 없습니다.");
+        System.out.println("----------------------------------------");
 
         System.out.print("새 비밀번호 : ");
         String password = sc.nextLine();
@@ -201,21 +222,29 @@ public class MemberView {
 
         boolean modified = memberController.modifyMember(modifiedMember);
 
+        System.out.println("----------------------------------------");
+
         if(!modified){
-            System.out.println("멤버십 정보 수정에 실패했습니다.");
+            System.out.println("[실패] 멤버십 정보 수정에 실패했습니다.");
             return;
         }
 
-        System.out.println("멤버십 정보가 수정되었습니다.");
+        System.out.println("[성공] 멤버십 정보가 수정되었습니다.");
 
-        }
+        System.out.println("========================================");
+    }
 
     public boolean withdrawMemberMenu(MemberDTO loggedInMember) {
         System.out.println();
-        System.out.println("----------- 멤버십 탈퇴 -----------");
-        System.out.println("탈퇴 시 계정 이용 및 복구가 불가합니다.");
-        System.out.println("또한, 보유 포인트 및 총 누적 금액이 모두 소멸됩니다.");
-        System.out.println("정말 탈퇴 하시겠습니까? 1, 2");
+        System.out.println("========================================");
+        System.out.println("               회원 탈퇴");
+        System.out.println("========================================");
+        System.out.println("[주의] 탈퇴한 계정은 복구할 수 없습니다.");
+        System.out.println("[주의] 보유 포인트와 누적금액이 소멸됩니다.");
+        System.out.println("----------------------------------------");
+        System.out.println("  1. 탈퇴 진행");
+        System.out.println("  2. 탈퇴 취소");
+        System.out.println("----------------------------------------");
 
         int number = inputNumber("메뉴 번호를 입력해주세요 : ");
 
@@ -228,7 +257,7 @@ public class MemberView {
             System.out.println("1 또는 2를 입력해주세요.");
             return false;
         }
-        // true는 탈퇴 완료, false는 취소 또는 탈퇴 실패를 의미
+        // true는 탈퇴 성공, false는 취소 또는 탈퇴 실패를 의미
         boolean withdrawn = memberController.withdrawMember(loggedInMember);
 
         if (!withdrawn) {

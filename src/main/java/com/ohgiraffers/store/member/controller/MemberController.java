@@ -16,6 +16,10 @@ public class MemberController {
         return memberService.joinMember(member);
     }
 
+    public boolean isLoginIdAvailable(String loginId) {
+        return memberService.isLoginIdAvailable(loginId);
+    }
+
     public MemberDTO selectMember(MemberDTO loginMember) {
         return memberService.selectMember(loginMember);
     }
