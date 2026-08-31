@@ -143,6 +143,40 @@ public class ProductService {
         }
     }
 
+    /** 진행 중인 주문에 담기지 않은 상품을 논리 삭제한다. */
+    public boolean deleteProduct(int productCode) throws SQLException {
+        validateProductCode(productCode);
+
+        try (Connection connection = DBConnection.getConnection()) {
+            connection.setAutoCommit(false);
+
+            try {
+                if (productDAO.findByCode(connection, productCode) == null) {
+                    connection.rollback();
+                    return false;
+                }
+
+                int affectedRows =
+                        productDAO.deleteProduct(
+                                connection,
+                                productCode
+                        );
+
+                if (affectedRows == 1) {
+                    connection.commit();
+                    return true;
+                }
+
+                connection.rollback();
+                return false;
+
+            } catch (SQLException | RuntimeException exception) {
+                connection.rollback();
+                throw exception;
+            }
+        }
+    }
+
     private void validateProductForRegistration(ProductDTO product) {
         validateCommonProductFields(product);
     }

@@ -107,35 +107,17 @@ public class PaymentService {
                     return false;
                 }
 
-                // 결제할 주문에 담긴 상품 목록 조회
+                // 재고는 장바구니에 담을 때 이미 예약되지만,
+                // 실제 주문상품이 없는 빈 주문은 결제할 수 없다.
                 List<OrderItemDTO> orderItems =
                         orderItemDAO.findAllByOrderCode(
                                 connection,
                                 payment.getOrderCode()
                         );
 
-                // 주문 상품이 없다면 결제할 수 없다.
                 if (orderItems.isEmpty()) {
                     connection.rollback();
                     return false;
-                }
-
-                // 결제 시점의 실제 재고를 확인하면서 주문수량만큼 차감
-                for (OrderItemDTO orderItem : orderItems) {
-
-                    int stockResult =
-                            orderItemDAO.decreaseProductStock(
-                                    connection,
-                                    orderItem.getProductCode(),
-                                    orderItem.getQuantity()
-                            );
-
-                    //상품이 없거나 현재 재고가 주문수량보다 부족하면
-                    //재고 차감 결과가 0이므로 결제 전체를 취소한다.
-                    if (stockResult != 1) {
-                        connection.rollback();
-                        return false;
-                    }
                 }
 
                 int pointUsed = 0;

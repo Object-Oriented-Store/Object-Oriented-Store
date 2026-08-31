@@ -95,7 +95,8 @@ ON DUPLICATE KEY UPDATE
     `product_name` = VALUES(`product_name`),
     `product_price` = VALUES(`product_price`),
     `stock_quantity` = VALUES(`stock_quantity`),
-    `category_code` = VALUES(`category_code`);
+    `category_code` = VALUES(`category_code`),
+    `is_deleted` = 'N';
 
 -- 테스트 회원
 -- 비밀번호는 개발용 가짜 데이터이며 실제 서비스 비밀번호가 아닙니다.

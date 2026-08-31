@@ -38,6 +38,8 @@ public class ProductDAO {
             QueryProvider.getQuery(QUERIES, "product.insert");
     private static final String UPDATE_PRODUCT =
             QueryProvider.getQuery(QUERIES, "product.update");
+    private static final String DELETE_PRODUCT =
+            QueryProvider.getQuery(QUERIES, "product.delete");
 
     /** 상품 전체 조회는 단독 조회이므로 이 메서드 안에서 연결을 열고 자동으로 닫는다. */
     public List<ProductDTO> findAll() throws SQLException {
@@ -158,6 +160,20 @@ public class ProductDAO {
             statement.setInt(4, product.getCategoryCode());
             statement.setInt(5, product.getProductCode());
 
+            return statement.executeUpdate();
+        }
+    }
+
+    /** 과거 주문 이력을 유지하면서 상품을 삭제 상태로 변경한다. */
+    public int deleteProduct(
+            Connection connection,
+            int productCode
+    ) throws SQLException {
+
+        try (PreparedStatement statement =
+                     connection.prepareStatement(DELETE_PRODUCT)) {
+
+            statement.setInt(1, productCode);
             return statement.executeUpdate();
         }
     }
