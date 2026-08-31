@@ -11,8 +11,6 @@ public class MemberView {
     // 화면 입력을 Controller에 전달하고 처리 결과를 출력하는 객체
     private final MemberController memberController = new MemberController();
     private final PaymentView paymentView = new PaymentView();
-    // false가 되면 로그인 회원용 메뉴 반복을 종료
-    boolean isLoggedIn = true;
 
     private Scanner sc = new Scanner(System.in);
 
@@ -138,7 +136,8 @@ public class MemberView {
     // MyMembership - 내정보 조회
     public void selectMemberMenu(MemberDTO loggedInMember) {
 
-        while (isLoggedIn) {
+
+        while (true) {
 
         // 로그인 시 저장한 회원 코드를 기준으로 DB의 최신 회원 정보를 다시 조회
         MemberDTO memberinfo = memberController.selectMember(loggedInMember);
@@ -164,7 +163,6 @@ public class MemberView {
             System.out.println("----------------------------------------");
             System.out.println("  1. 멤버십 정보 수정");
             System.out.println("  2. 이전 화면으로");
-            System.out.println("  3. 프로그램 종료");
             System.out.println("----------------------------------------");
 
 
@@ -178,14 +176,8 @@ public class MemberView {
                 case 2:
                     System.out.println("이전 화면으로 이동합니다.");
                     return;
-
-                case 3:
-                    isLoggedIn = false;
-                    System.out.println("프로그램을 종료합니다.");
-                    return;
-
                 default:
-                    System.out.println("1~3 사이의 숫자를 입력해주세요.");
+                    System.out.println("1~2 사이의 숫자를 입력해주세요.");
             }
         }
     }
