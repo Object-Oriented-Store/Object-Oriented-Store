@@ -76,14 +76,23 @@ public class PaymentView {
             return false;
         }
 
-        String paymentMethod =
-                selectPaymentMethod();
+        String paymentMethod;
+        int pointUse;
 
-        int pointUse = 0;
+        // 포인트 결제가 불가능하면 결제 방식 선택 화면으로 돌아간다.
+        while (true) {
 
-        // 포인트 결제를 선택한 경우 로그인 회원의 보유 포인트 조회
-        if ("POINT".equals(paymentMethod)) {
+            paymentMethod =
+                    selectPaymentMethod();
 
+            pointUse = 0;
+
+            // 포인트 결제가 아니면 선택을 확정하고 반복문 종료
+            if (!"POINT".equals(paymentMethod)) {
+                break;
+            }
+
+            // 포인트 결제를 선택한 경우 로그인 회원의 보유 포인트 조회
             MemberDTO lookupMember =
                     new MemberDTO(
                             memberCode,
@@ -92,9 +101,9 @@ public class PaymentView {
                     );
 
             MemberDTO memberInfo =
-                    memberController.selectMember(
-                            lookupMember
-                    );
+                    memberController.selectMember(lookupMember);
+
+            // 회원 조회 실패는 결제 방식의 문제가 아니므로 결제를 종료
             if (memberInfo == null) {
                 System.out.println(
                         "회원 정보를 조회할 수 없습니다."
@@ -102,20 +111,22 @@ public class PaymentView {
                 return false;
             }
 
-            int pointBalance =
-                    memberInfo.getPointBalance();
+            int pointBalance = memberInfo.getPointBalance();
 
+            int paymentAmount = pendingOrder.getFinalAmount();
+
+            // 포인트가 없으면 다른 결제 방식을 다시 선택
             if (pointBalance <= 0) {
                 System.out.println(
                         "사용할 수 있는 포인트가 없습니다."
                 );
-                return false;
+                System.out.println(
+                        "다른 결제 방식을 선택해주세요."
+                );
+                continue;
             }
 
-            int paymentAmount =
-                    pendingOrder.getFinalAmount();
-
-            // 현재 구현에서는 포인트만으로 전액 결제할 수 있어야 한다.
+            // 포인트가 부족하면 다른 결제 방식을 다시 선택
             if (pointBalance < paymentAmount) {
                 System.out.println(
                         "보유 포인트가 결제금액보다 부족합니다."
@@ -130,7 +141,10 @@ public class PaymentView {
                                 + paymentAmount
                                 + "점"
                 );
-                return false;
+                System.out.println(
+                        "다른 결제 방식을 선택해주세요."
+                );
+                continue;
             }
 
             pointUse = paymentAmount;
@@ -152,8 +166,14 @@ public class PaymentView {
                 System.out.println(
                         "포인트 결제를 취소했습니다."
                 );
-                return false;
+                System.out.println(
+                        "다른 결제 방식을 선택해주세요."
+                );
+                continue;
             }
+
+            // 사용할 수 있는 포인트가 충분하고 사용에도 동의했으므로 선택 확정
+            break;
         }
 
         int finalAmount =
