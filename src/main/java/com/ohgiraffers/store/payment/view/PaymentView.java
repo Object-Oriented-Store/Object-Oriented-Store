@@ -383,11 +383,15 @@ public class PaymentView {
             int memberCode
     ) {
 
-        int payCode =
-                readInt(
-                        "조회할 결제번호를 입력하세요: "
-                );
+        int payCode ;
 
+        while (true) {
+            payCode = readInt("조회할 결제번호를 입력하세요: ");
+            if(payCode > 0) {
+                break;
+            }
+            System.out.println("결제번호는 1 이상의 숫자를 입력해주세요.");
+        }
         try {
             PaymentDTO payment =
                     paymentController
@@ -396,98 +400,74 @@ public class PaymentView {
                                     payCode
                             );
 
+
             if (payment == null) {
-                System.out.println(
-                        "해당 결제 내역을 찾을 수 없습니다."
-                );
+                System.out.println("해당 결제 내역을 찾을 수 없습니다.");
                 return;
             }
 
             System.out.println();
-            System.out.println(
-                    "========== 결제 상세 =========="
-            );
+            System.out.println("========== 결제 상세 ==========");
 
             printPayment(payment);
 
         } catch (SQLException exception) {
-            System.out.println(
-                    "결제 조회 중 DB 오류가 발생했습니다: "
-                            + exception.getMessage()
-            );
+            System.out.println("결제 조회 중 DB 오류가 발생했습니다: " + exception.getMessage());
         }
     }
 
     // 선택한 결제 취소
     private void cancelPayment(int memberCode) {
 
-        int payCode =
-                readInt(
-                        "취소할 결제번호를 입력하세요: "
-                );
+        int payCode;
 
-        try {
-            PaymentDTO payment =
-                    paymentController
-                            .findPaymentByPayCode(
-                                    memberCode,
-                                    payCode
-                            );
+        // 결제번호가 올바를 때까지만 반복
+        while (true) {
+            payCode = readInt("취소할 결제번호를 입력하세요: ");
 
-            if (payment == null) {
-                System.out.println(
-                        "취소할 결제 내역을 찾을 수 없습니다."
-                );
-                return;
+            if (payCode > 0) {
+                break;
             }
-
-            if (!"COMPLETED".equals(
-                    payment.getPaymentStatus()
-            )) {
-                System.out.println(
-                        "완료된 결제만 취소할 수 있습니다."
-                );
-                return;
-            }
-
-            System.out.println();
-            System.out.println(
-                    "========== 취소할 결제 =========="
-            );
-
-            printPayment(payment);
-
-            if (!readYesOrNo(
-                    "이 결제를 취소하시겠습니까? (Y/N): "
-            )) {
-                System.out.println(
-                        "결제 취소를 중단했습니다."
-                );
-                return;
-            }
-
-            boolean canceled =
-                    paymentController.cancelPayment(
-                            memberCode,
-                            payCode
-                    );
-
-            if (canceled) {
-                System.out.println(
-                        "결제가 정상적으로 취소됐습니다."
-                );
-            } else {
-                System.out.println(
-                        "결제를 취소하지 못했습니다."
-                );
-            }
-
-        } catch (SQLException exception) {
-            System.out.println(
-                    "결제 취소 중 DB 오류가 발생했습니다: "
-                            + exception.getMessage()
-            );
+            System.out.println(" 결제번호는 1 이상의 숫자를 입력해주세요. ");
         }
+
+        // 아래의 조회 및 취소 처리는 한 번만 실행
+            try {
+                PaymentDTO payment = paymentController.findPaymentByPayCode(memberCode, payCode);
+
+                if (payment == null) {
+                    System.out.println("취소할 결제 내역을 찾을 수 없습니다.");
+                    return;
+                }
+
+                if (!"COMPLETED".equals(payment.getPaymentStatus()
+                )) {
+                    System.out.println("완료된 결제만 취소할 수 있습니다.");
+                    return;
+                }
+
+                System.out.println();
+                System.out.println("========== 취소할 결제 ==========");
+
+                printPayment(payment);
+
+                if (!readYesOrNo("이 결제를 취소하시겠습니까? (Y/N): "
+                )) {
+                    System.out.println("결제 취소를 중단했습니다.");
+                    return;
+                }
+
+                boolean canceled = paymentController.cancelPayment(memberCode, payCode);
+
+                if (canceled) {
+                    System.out.println("결제가 정상적으로 취소됐습니다.");
+                } else {
+                    System.out.println("결제를 취소하지 못했습니다.");
+                }
+
+            } catch (SQLException exception) {
+                System.out.println("결제 취소 중 DB 오류가 발생했습니다: " + exception.getMessage());
+            }
     }
 
     // 결제 방식 선택
