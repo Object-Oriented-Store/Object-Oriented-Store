@@ -52,11 +52,14 @@ CREATE TABLE `tbl_product` (
     `product_price` INT NOT NULL COMMENT '상품판매가격',
     `stock_quantity` INT NOT NULL DEFAULT 0 COMMENT '현재재고수량',
     `category_code` INT NOT NULL COMMENT '카테고리식별코드',
+    `is_deleted` CHAR(1) NOT NULL DEFAULT 'N' COMMENT '상품삭제여부',
     CONSTRAINT `PK_TBL_PRODUCT` PRIMARY KEY (`product_code`),
     CONSTRAINT `CHK_PRODUCT_PRICE`
         CHECK (`product_price` >= 0),
     CONSTRAINT `CHK_PRODUCT_STOCK_QUANTITY`
         CHECK (`stock_quantity` >= 0),
+    CONSTRAINT `CHK_PRODUCT_IS_DELETED`
+        CHECK (`is_deleted` IN ('Y', 'N')),
     CONSTRAINT `FK_CATEGORY_TO_PRODUCT`
         FOREIGN KEY (`category_code`)
         REFERENCES `tbl_category` (`category_code`)

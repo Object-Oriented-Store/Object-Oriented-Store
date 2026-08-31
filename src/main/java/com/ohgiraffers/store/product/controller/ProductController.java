@@ -49,4 +49,8 @@ public class ProductController {
         return productService.updateProduct(product);
     }
 
+    public boolean deleteProduct(int productCode) throws SQLException {
+        return productService.deleteProduct(productCode);
+    }
+
 }

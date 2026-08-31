@@ -73,25 +73,29 @@ public class OrderService {
                                 quantity
                         );
 
+                // 장바구니에 담는 순간 재고를 예약한다.
+                // 재고가 부족하면 0행이 수정되므로 주문상품도 저장하지 않는다.
+                int stockResult =
+                        orderItemDAO.decreaseProductStock(
+                                connection,
+                                productCode,
+                                quantity
+                        );
+
+                if (stockResult != 1) {
+                    connection.rollback();
+                    return false;
+                }
+
                 int itemResult =
                         orderItemDAO.insertOrderItem(
                                 connection,
                                 orderItem
                         );
 
-                // 상품 추가 후 주문 총액 재계산
-                int originalAmount =
-                        orderDAO.selectOriginalAmount(
-                                connection,
-                                pendingOrder.getOrderCode()
-                        );
-
-                pendingOrder.setOriginalAmount(originalAmount);
-                pendingOrder.setDiscountAmount(0);
-                pendingOrder.setFinalAmount(originalAmount);
-
+                // 상품 추가 후 행사 할인을 포함해 주문 총액 재계산
                 int amountResult =
-                        orderDAO.updateOrderAmounts(
+                        recalculateOrderAmounts(
                                 connection,
                                 pendingOrder
                         );
@@ -147,6 +151,52 @@ public class OrderService {
                     return false;
                 }
 
+                int currentQuantity =
+                        orderItemDAO.findQuantity(
+                                connection,
+                                pendingOrder.getOrderCode(),
+                                productCode
+                        );
+
+                // 수정할 상품이 장바구니에 없으면 실패
+                if (currentQuantity <= 0) {
+                    connection.rollback();
+                    return false;
+                }
+
+                int quantityDifference =
+                        quantity - currentQuantity;
+
+                // 수량이 늘어난 경우 늘어난 수량만큼 추가로 재고를 예약한다.
+                if (quantityDifference > 0) {
+                    int stockResult =
+                            orderItemDAO.decreaseProductStock(
+                                    connection,
+                                    productCode,
+                                    quantityDifference
+                            );
+
+                    if (stockResult != 1) {
+                        connection.rollback();
+                        return false;
+                    }
+                }
+
+                // 수량이 줄어든 경우 줄어든 수량만큼 재고를 즉시 돌려놓는다.
+                if (quantityDifference < 0) {
+                    int stockResult =
+                            orderItemDAO.increaseProductStock(
+                                    connection,
+                                    productCode,
+                                    -quantityDifference
+                            );
+
+                    if (stockResult != 1) {
+                        connection.rollback();
+                        return false;
+                    }
+                }
+
                 OrderItemDTO orderItem =
                         new OrderItemDTO(
                                 pendingOrder.getOrderCode(),
@@ -166,19 +216,9 @@ public class OrderService {
                     return false;
                 }
 
-                // 수량 변경 후 주문 총액 재계산
-                int originalAmount =
-                        orderDAO.selectOriginalAmount(
-                                connection,
-                                pendingOrder.getOrderCode()
-                        );
-
-                pendingOrder.setOriginalAmount(originalAmount);
-                pendingOrder.setDiscountAmount(0);
-                pendingOrder.setFinalAmount(originalAmount);
-
+                // 수량 변경 후 행사 할인을 포함해 주문 총액 재계산
                 int amountResult =
-                        orderDAO.updateOrderAmounts(
+                        recalculateOrderAmounts(
                                 connection,
                                 pendingOrder
                         );
@@ -229,6 +269,18 @@ public class OrderService {
                     return false;
                 }
 
+                int deletedQuantity =
+                        orderItemDAO.findQuantity(
+                                connection,
+                                pendingOrder.getOrderCode(),
+                                productCode
+                        );
+
+                if (deletedQuantity <= 0) {
+                    connection.rollback();
+                    return false;
+                }
+
                 // 선택한 상품 삭제
                 int itemResult =
                         orderItemDAO.deleteOrderItem(
@@ -243,19 +295,22 @@ public class OrderService {
                     return false;
                 }
 
-                // 상품 삭제 후 주문 총액 재계산
-                int originalAmount =
-                        orderDAO.selectOriginalAmount(
+                // 장바구니에서 뺀 수량을 상품 재고로 복구한다.
+                int stockResult =
+                        orderItemDAO.increaseProductStock(
                                 connection,
-                                pendingOrder.getOrderCode()
+                                productCode,
+                                deletedQuantity
                         );
 
-                pendingOrder.setOriginalAmount(originalAmount);
-                pendingOrder.setDiscountAmount(0);
-                pendingOrder.setFinalAmount(originalAmount);
+                if (stockResult != 1) {
+                    connection.rollback();
+                    return false;
+                }
 
+                // 상품 삭제 후 행사 할인을 포함해 주문 총액 재계산
                 int amountResult =
-                        orderDAO.updateOrderAmounts(
+                        recalculateOrderAmounts(
                                 connection,
                                 pendingOrder
                         );
@@ -305,6 +360,17 @@ public class OrderService {
                     return false;
                 }
 
+                List<OrderItemDTO> orderItems =
+                        orderItemDAO.findAllByOrderCode(
+                                connection,
+                                pendingOrder.getOrderCode()
+                        );
+
+                if (orderItems.isEmpty()) {
+                    connection.rollback();
+                    return false;
+                }
+
                 // 주문에 추가된 상품 전체 삭제
                 int itemResult =
                         orderItemDAO.deleteAllOrderItems(
@@ -318,19 +384,24 @@ public class OrderService {
                     return false;
                 }
 
-                // 전체 삭제 후 주문 총액 재계산
-                int originalAmount =
-                        orderDAO.selectOriginalAmount(
-                                connection,
-                                pendingOrder.getOrderCode()
-                        );
+                // 장바구니에서 전체 삭제한 상품의 예약 재고를 모두 복구한다.
+                for (OrderItemDTO orderItem : orderItems) {
+                    int stockResult =
+                            orderItemDAO.increaseProductStock(
+                                    connection,
+                                    orderItem.getProductCode(),
+                                    orderItem.getQuantity()
+                            );
 
-                pendingOrder.setOriginalAmount(originalAmount);
-                pendingOrder.setDiscountAmount(0);
-                pendingOrder.setFinalAmount(originalAmount);
+                    if (stockResult != 1) {
+                        connection.rollback();
+                        return false;
+                    }
+                }
 
+                // 전체 삭제 후 행사 할인을 포함해 주문 총액 재계산
                 int amountResult =
-                        orderDAO.updateOrderAmounts(
+                        recalculateOrderAmounts(
                                 connection,
                                 pendingOrder
                         );
@@ -406,10 +477,39 @@ public class OrderService {
         try (Connection connection =
                      DBConnection.getConnection()) {
 
-            return orderDAO.findPendingOrderByMemberCode(
-                    connection,
-                    memberCode
-            );
+            connection.setAutoCommit(false);
+
+            try {
+                OrderDTO pendingOrder =
+                        orderDAO.findPendingOrderByMemberCode(
+                                connection,
+                                memberCode
+                        );
+
+                if (pendingOrder == null) {
+                    connection.rollback();
+                    return null;
+                }
+
+                // 결제 직전에도 현재 활성 행사를 기준으로 금액을 다시 계산한다.
+                int amountResult =
+                        recalculateOrderAmounts(
+                                connection,
+                                pendingOrder
+                        );
+
+                if (amountResult != 1) {
+                    connection.rollback();
+                    return null;
+                }
+
+                connection.commit();
+                return pendingOrder;
+
+            } catch (SQLException | RuntimeException exception) {
+                connection.rollback();
+                throw exception;
+            }
 
         } catch (SQLException e) {
             throw new RuntimeException(
@@ -417,6 +517,36 @@ public class OrderService {
                     e
             );
         }
+    }
+
+    // 주문상품이 바뀔 때마다 할인 전 금액, 행사 할인금액, 최종금액을 함께 갱신한다.
+    private int recalculateOrderAmounts(
+            Connection connection,
+            OrderDTO pendingOrder
+    ) throws SQLException {
+
+        int originalAmount =
+                orderDAO.selectOriginalAmount(
+                        connection,
+                        pendingOrder.getOrderCode()
+                );
+
+        int discountAmount =
+                orderDAO.selectPromotionDiscountAmount(
+                        connection,
+                        pendingOrder.getOrderCode()
+                );
+
+        pendingOrder.setOriginalAmount(originalAmount);
+        pendingOrder.setDiscountAmount(discountAmount);
+        pendingOrder.setFinalAmount(
+                Math.max(originalAmount - discountAmount, 0)
+        );
+
+        return orderDAO.updateOrderAmounts(
+                connection,
+                pendingOrder
+        );
     }
 
     // 새로운 주문 식별번호 생성

@@ -129,6 +129,55 @@ public class OrderDAO {
         return originalAmount;
     }
 
+    // 활성 행사 중 상품별 가장 높은 할인율을 적용해 주문 할인금액을 계산한다.
+    public int selectPromotionDiscountAmount(
+            Connection connection,
+            int orderCode
+    ) throws SQLException {
+
+        String query = """
+                SELECT COALESCE(
+                    SUM(
+                        FLOOR(
+                            p.product_price
+                            * oi.quantity
+                            * COALESCE(active_promotion.discount_value, 0)
+                            / 100
+                        )
+                    ),
+                    0
+                ) AS discount_amount
+                FROM tbl_order_item oi
+                JOIN tbl_product p
+                  ON p.product_code = oi.product_code
+                LEFT JOIN (
+                    SELECT pp.product_code,
+                           MAX(pr.discount_value) AS discount_value
+                    FROM tbl_promotion_product pp
+                    JOIN tbl_promotion pr
+                      ON pr.promotion_code = pp.promotion_code
+                    WHERE pr.promotion_status = 'Y'
+                    GROUP BY pp.product_code
+                ) active_promotion
+                  ON active_promotion.product_code = oi.product_code
+                WHERE oi.order_code = ?
+                """;
+
+        try (PreparedStatement pstmt =
+                     connection.prepareStatement(query)) {
+
+            pstmt.setInt(1, orderCode);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("discount_amount");
+                }
+            }
+        }
+
+        return 0;
+    }
+
     // 4. 계산한 주문 금액을 PENDING 주문에 저장
     public int updateOrderAmounts(
             Connection connection,

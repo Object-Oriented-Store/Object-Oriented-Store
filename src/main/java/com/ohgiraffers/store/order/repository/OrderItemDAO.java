@@ -160,7 +160,37 @@ public class OrderItemDAO {
         return orderItems;
     }
 
-    // 결제 완료 시 주문한 수량만큼 상품 재고를 차감한다.
+    // 주문에 이미 담긴 상품의 현재 수량을 조회한다.
+    public int findQuantity(
+            Connection connection,
+            int orderCode,
+            int productCode
+    ) throws SQLException {
+
+        String query = """
+            SELECT quantity
+            FROM tbl_order_item
+            WHERE order_code = ?
+              AND product_code = ?
+            """;
+
+        try (PreparedStatement pstmt =
+                     connection.prepareStatement(query)) {
+
+            pstmt.setInt(1, orderCode);
+            pstmt.setInt(2, productCode);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("quantity");
+                }
+            }
+        }
+
+        return 0;
+    }
+
+    // 장바구니에 담는 수량만큼 상품 재고를 차감한다.
     // 현재 재고가 주문수량보다 적으면 수정하지 않고 0을 반환한다.
     public int decreaseProductStock(
             Connection connection,
@@ -187,7 +217,7 @@ public class OrderItemDAO {
         }
     }
 
-    // 결제 취소 시 주문했던 수량만큼 상품 재고를 복구한다.
+    // 장바구니 삭제 또는 결제 취소 시 수량만큼 상품 재고를 복구한다.
     public int increaseProductStock(
             Connection connection,
             int productCode,
