@@ -22,16 +22,13 @@ public class MainRun {
         if ("admin".equals(loggedInMember.getLoginId())) {
             controller.startManager();
 
+            continue;
+        }
+        boolean returnToStart = controller.startMember(loggedInMember);
+
+        if (!returnToStart) {
             return;
         }
-        boolean withdrawn = controller.startMember(loggedInMember);
-
-        if (!withdrawn) {
-            return;
-        }
-
-        System.out.println();
-        System.out.println("탈퇴가 완료되었습니다.");
     }
     }
 }

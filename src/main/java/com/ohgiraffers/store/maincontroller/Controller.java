@@ -122,7 +122,8 @@ public class Controller {
             System.out.println("[멤버십 전용 메뉴]");
             System.out.println("1. 구매하기");
             System.out.println("2. My Membership");
-            System.out.println("3. 프로그램 종료");
+            System.out.println("3. 메인 화면");
+            System.out.println("4. 프로그램 종료");
             System.out.println("======================================");
 
             int choice2 = inputNumber("메뉴를 정수로 입력하세요 : ");
@@ -161,6 +162,10 @@ public class Controller {
                     break;
 
                 case 3:
+                    System.out.println("메인 화면으로 이동합니다.");
+                    return true;
+
+                case 4:
                     System.out.println("프로그램을 종료합니다.");
                     return false;
 
@@ -264,8 +269,8 @@ public class Controller {
                 break;
 
             case 6:
-                Start();
-                break;
+                System.out.println("메인 화면으로 이동합니다.");
+                return;
 
             default:
                 System.out.println("잘못입력하셨습니다. 다시 입력하세요.");
